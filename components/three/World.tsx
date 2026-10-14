@@ -83,15 +83,10 @@ export default function World({ screens, copy, mobile }: { screens: ScreenData[]
   useEffect(() => {
     let alive = true;
     void drawLiveSite(copy).then((t) => (alive ? (live.mat.uniforms.map.value = t) : t.dispose()));
-    const label = document.querySelector<HTMLElement>("[data-build]");
-    const tween = gsap.to(intro.current, {
-      draw: 1,
-      duration: 2.4,
-      delay: 0.15,
-      ease: "power2.inOut",
-      onUpdate: () => label && (label.textContent = `${Math.round(intro.current.draw * 100)}%`),
-      onComplete: () => label?.closest("[data-build-wrap]")?.setAttribute("data-done", ""),
-    });
+    // Pick up where the hero drawing (a CSS animation that starts at page load) has got to,
+    // so the hand-over from drawing to 3D never redraws from zero.
+    intro.current.draw = Math.min(1, Math.max(0, (performance.now() - 150) / 2400));
+    const tween = gsap.to(intro.current, { draw: 1, duration: 2.4 * (1 - intro.current.draw), ease: "power2.out" });
     const click = (e: MouseEvent) => {
       const i = s.current.hovered;
       if (i < 0 || (e.target as Element).closest("a, button")) return;

@@ -1,20 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Anybody, Martian_Mono, Schibsted_Grotesk } from "next/font/google";
-import { notFound } from "next/navigation";
 import { dictionaries, hasLocale, locales, siteUrl } from "@/content/i18n";
 import Nav from "@/components/Nav";
 import Chrome from "@/components/Chrome";
 import Cursor from "@/components/Cursor";
+import { fontVars } from "../fonts";
 import "../globals.css";
-
-// Self-hosted at build time by next/font (no requests to Google at runtime).
-const display = Anybody({
-  subsets: ["latin", "latin-ext"],
-  axes: ["wdth"],
-  variable: "--font-anybody",
-});
-const sans = Schibsted_Grotesk({ subsets: ["latin", "latin-ext"], variable: "--font-schibsted" });
-const mono = Martian_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-martian", preload: false });
 
 // Decide 3D vs. static before first paint so fallbacks never shift the layout. Kept free on purpose:
 // no WebGL context here. The real GPU check runs later, off the critical path (see Stage3D).
@@ -45,15 +35,17 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
 export const viewport: Viewport = { themeColor: "#0b0d12", colorScheme: "dark" };
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
-  const { lang } = await params;
-  if (!hasLocale(lang)) notFound();
+  // An unknown first segment (e.g. /some-typo) still gets the site chrome in English; the page
+  // below then calls notFound(), so the designed 404 renders instead of a bare default page.
+  const { lang: raw } = await params;
+  const lang = hasLocale(raw) ? raw : "en";
   const t = dictionaries[lang];
 
   return (
     <html
       lang={lang}
       data-stage="wireframe"
-      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+      className={fontVars}
       suppressHydrationWarning
     >
       <head>

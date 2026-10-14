@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ViewTransition } from "react";
 import { contact, localePath, type Dict, type Locale } from "@/content/i18n";
 import { comparisons, projectName, projects } from "@/content/projects";
+import { Art } from "./Art";
 import BeforeAfter from "./BeforeAfter";
 import CopyEmail from "./CopyEmail";
 import ViewportSize from "./ViewportSize";
@@ -13,12 +14,10 @@ const pad = (n: number) => String(n).padStart(2, "0");
 export function Hero({ t }: T) {
   return (
     <section id="top" className="wrap relative z-10 flex min-h-svh flex-col justify-end pb-5 pt-28">
-      {/* Without WebGL (or with reduced motion) the hero object is shown as a drawing. */}
-      <img
-        src="/work/this-site.svg"
-        alt=""
-        className="static-only pointer-events-none absolute right-0 top-20 -z-10 w-[min(58vw,820px)] opacity-90 max-md:hidden"
-      />
+      {/* Draws itself on load; the 3D takes over after the first interaction. Without WebGL it stays. */}
+      <div className="hero-art pointer-events-none absolute -z-10" aria-hidden>
+        <img src="/art/hero.svg" alt="" width={720} height={660} fetchPriority="high" />
+      </div>
       <p className="label mb-5 md:mb-7">{t.hero.role}</p>
       <h1 className="display hero-name">
         <span className="outline-type block">{t.hero.first}</span>
@@ -41,8 +40,8 @@ export function Hero({ t }: T) {
       </div>
       <div className="label mt-10 flex items-center justify-between border-t border-line pt-4">
         <ViewportSize />
-        <span className="with-3d build inline-flex items-center gap-2" data-build-wrap aria-hidden>
-          <span className="dot" /> {t.hero.loading} <span data-build>0%</span>
+        <span className="build inline-flex items-center gap-2" aria-hidden>
+          <span className="dot" /> {t.hero.loading} <span className="build-count" />
         </span>
         <span>
           {t.hero.scroll} <span aria-hidden>↓</span>
@@ -127,7 +126,7 @@ export function Work({ lang, t }: T & { lang: Locale }) {
 
 export function Compare({ t }: T) {
   return (
-    <section id="compare" aria-labelledby="compare-title" className="relative z-10 py-[16svh]">
+    <section id="compare" aria-labelledby="compare-title" className="relative z-10 bg-ink py-[16svh]">
       <div className="wrap">
         <h2 id="compare-title" className="display text-[clamp(2.6rem,8vw,8rem)]">
           {t.compare.title}
@@ -211,14 +210,36 @@ export function Stepra({ t }: T) {
 }
 
 export function About({ t }: T) {
+  const lines = t.about.terminal;
   return (
     <section id="about" aria-labelledby="about-title" className="relative z-10 py-[18svh]">
-      <div className="wrap cols gap-y-8">
+      <div className="wrap cols gap-y-10">
         <p className="label col-span-4 md:col-span-2">{t.about.label}</p>
-        <h2 id="about-title" className="display col-span-4 text-[clamp(2.4rem,6.4vw,6.5rem)] md:col-span-10">
+        <h2 id="about-title" className="display col-span-4 text-[clamp(1.75rem,8vw,6.5rem)] md:col-span-10">
           {t.about.title}
         </h2>
-        <div className="lead col-span-4 space-y-5 text-paper/85 md:col-span-5 md:col-start-7">
+        {/* A little build log: lines type themselves in as it scrolls into view. */}
+        <div className="term col-span-4 md:col-span-6">
+          <div className="term-bar" aria-hidden>
+            <span />
+            <span />
+            <span />
+            <span className="label ml-2">peter@weberv: ~</span>
+          </div>
+          <div className="term-body">
+            {lines.map(([prompt, text], i) => (
+              <p key={i} style={{ "--i": i } as React.CSSProperties} className={prompt ? "term-cmd" : "term-out"}>
+                {prompt ? <span className="text-link">{prompt} $ </span> : null}
+                {text}
+              </p>
+            ))}
+            <p style={{ "--i": lines.length } as React.CSSProperties} aria-hidden>
+              <span className="text-link">~ $ </span>
+              <span className="term-caret" />
+            </p>
+          </div>
+        </div>
+        <div className="lead col-span-4 space-y-5 text-paper/85 md:col-span-5 md:col-start-8 md:self-center">
           {t.about.body.map((p) => (
             <p key={p}>{p}</p>
           ))}
@@ -241,7 +262,8 @@ export function Pricing({ t }: T) {
             </h2>
             <p className="lead mt-8 max-w-[40ch] text-paper/80">{t.pricing.body}</p>
           </div>
-          <div className="col-span-4 flex flex-col justify-between gap-10 md:col-span-4 md:col-start-9">
+          <div className="col-span-4 flex flex-col justify-between gap-8 md:col-span-4 md:col-start-9">
+            <Art name="pricing" className="-mx-4 -mt-6 md:-mt-14" />
             <ul className="space-y-3">
               {t.pricing.included.map((item) => (
                 <li key={item} className="flex gap-3 border-t border-line pt-3">
@@ -272,6 +294,7 @@ export function Contact({ t }: T) {
             {t.contact.title}
           </h2>
           <p className="lead mt-6 max-w-[36ch] text-paper/80">{t.contact.body}</p>
+          <Art name="contact" className="mt-10 max-w-[480px] max-md:hidden" />
         </div>
         <div className="col-span-4 flex flex-col items-start gap-8 md:col-span-6 md:col-start-7 md:justify-end">
           <a

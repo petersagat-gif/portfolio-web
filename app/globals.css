@@ -177,6 +177,7 @@ video {
    and the full stop blinks like a caret. Transform/opacity only: no layout work per frame. */
 .hero-name {
   position: relative;
+  width: fit-content;
 }
 .hero-name::after {
   content: "";
@@ -189,9 +190,9 @@ video {
   animation: scan 1.5s 0.3s var(--ease-out) both;
 }
 @keyframes scan {
-  0% { transform: translateX(0); opacity: 1; }
+  0% { left: 0; opacity: 1; }
   85% { opacity: 1; }
-  100% { transform: translateX(min(88vw, 76rem)); opacity: 0; }
+  100% { left: 100%; opacity: 0; }
 }
 .caret {
   animation: caret 0.9s 0.3s steps(1) 3 both;
@@ -199,8 +200,203 @@ video {
 @keyframes caret {
   50% { opacity: 0; }
 }
-.build[data-done] {
-  --dot: var(--cobalt);
+/* Hero drawing: draws itself on load (2.4 s), then hands over to the 3D object once that has booted. */
+.hero-art {
+  top: 4.75rem;
+  left: 50%;
+  width: min(80vw, 22rem);
+  translate: -50% 0;
+  transition: opacity 0.9s 0.3s var(--ease-out);
+}
+.hero-art img {
+  width: 100%;
+  height: auto;
+}
+.hero-art::before {
+  content: "";
+  position: absolute;
+  inset: 5% 0 0;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgb(61 91 255 / 0.2), transparent);
+}
+@media (min-width: 768px) {
+  .hero-art {
+    top: 11svh;
+    left: auto;
+    right: calc(var(--gutter) * -0.5);
+    width: min(48vw, 46rem);
+    translate: none;
+  }
+}
+html[data-3d-ready] .hero-art {
+  opacity: 0;
+}
+
+/* "Building 0–100%": a CSS counter that runs alongside the drawing, no JavaScript. */
+@property --build {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+.build-count {
+  counter-reset: build var(--build);
+  animation: build 2.4s 0.15s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.build-count::after {
+  content: counter(build) "%";
+}
+@keyframes build {
+  to {
+    --build: 100;
+  }
+}
+.build .dot {
+  animation: dot-ready 0.01s 2.6s forwards;
+}
+@keyframes dot-ready {
+  to {
+    background: var(--cobalt);
+  }
+}
+
+/* ── Marquees ─────────────────────────────────────────────────────────── */
+.marquee {
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+.marquee-row > span {
+  display: inline-flex;
+  align-items: center;
+}
+.marquee-sep {
+  display: inline-block;
+  margin-inline: 0.45em;
+  font-size: 0.45em;
+  color: var(--cobalt);
+  -webkit-text-stroke: 0;
+}
+.marquee-ticker {
+  background: var(--ink); /* covers the 3D gallery as it scrolls away */
+  padding-block: 2.5rem;
+  border-block: 1px solid var(--line);
+  font-size: clamp(2.6rem, 6.5vw, 6rem);
+}
+.marquee-clip {
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+  padding-block: 6svh;
+}
+.marquee-band {
+  padding-block: 1.1rem;
+  background: var(--cobalt);
+  color: #fff;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  rotate: -2deg;
+  scale: 1.04;
+}
+.marquee-band .marquee-sep {
+  color: var(--caution);
+}
+.marquee-band .marquee-track {
+  animation-duration: 26s;
+  animation-direction: reverse;
+}
+@keyframes marquee {
+  to {
+    translate: -50% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* ── About: build-log terminal ────────────────────────────────────────── */
+.term {
+  align-self: start;
+  border-radius: 0.875rem;
+  background: var(--panel);
+  box-shadow:
+    inset 0 0 0 1px rgb(236 233 226 / 0.1),
+    0 40px 120px -50px rgb(61 91 255 / 0.5);
+  overflow: hidden;
+}
+.term-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+.term-bar > span:not(.label) {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: rgb(236 233 226 / 0.18);
+}
+.term-body {
+  padding: 1.25rem 1.25rem 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.9;
+}
+.term-out {
+  color: rgb(236 233 226 / 0.75);
+  padding-left: 1.4em;
+}
+.term-caret {
+  display: inline-block;
+  width: 0.6em;
+  height: 1.1em;
+  vertical-align: -0.2em;
+  background: var(--caution);
+  animation: caret 1s steps(1) infinite;
+}
+/* Each line "types" in as the terminal scrolls into view (scroll-driven, no JavaScript). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .term-body > p {
+      animation: type linear both;
+      animation-timeline: view();
+      animation-range: cover calc(5% + var(--i) * 3%) cover calc(11% + var(--i) * 3%);
+    }
+  }
+}
+@keyframes type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* ── Inline illustrations draw themselves as they scroll into view ────── */
+.art-scroll {
+  view-timeline-name: --art;
+}
+.art-scroll svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@supports (animation-timeline: view()) {
+  .art-scroll :is(.a-s, .a-h, .a-y, .a-p, .a-g, .a-f) {
+    animation-timeline: --art;
+    animation-delay: 0s;
+    animation-duration: auto;
+    animation-fill-mode: both;
+    animation-range: cover calc(6% + var(--t) * 8%) cover calc(16% + var(--t) * 8%);
+  }
 }
 
 /* ── Toolkit ──────────────────────────────────────────────────────────── */

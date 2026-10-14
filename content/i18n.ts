@@ -99,9 +99,20 @@ const en = {
     roles: "Founder · Front end · Back end",
     cta: "Visit Stepra",
   },
+  marquee: {
+    services: ["Web design", "Development", "3D & motion", "SEO", "Modernisation", "Booking flows"],
+  },
   about: {
     label: "About",
     title: "Student. Founder. Builder.",
+    terminal: [
+      ["~", "whoami"],
+      ["", "Peter Šagát — student, founder, builder"],
+      ["~", "ls ~/building"],
+      ["", "stepra/   weberv/   this-site/"],
+      ["~", "cat status.txt"],
+      ["", "● taking on new projects"],
+    ] as [string, string][],
     body: [
       "I’m Peter, a student based in Slovakia. Together with Oliver I run Weberv, where we build and modernise websites for businesses in Slovakia and across Europe.",
       "When I’m not on client work, I’m building Stepra. I like websites that load fast, read clearly and make people want to get in touch.",
@@ -230,9 +241,20 @@ const sk: Dict = {
     roles: "Zakladateľ · Frontend · Backend",
     cta: "Navštíviť Stepru",
   },
+  marquee: {
+    services: ["Webdizajn", "Vývoj", "3D a animácie", "SEO", "Modernizácia", "Rezervácie"],
+  },
   about: {
     label: "O mne",
     title: "Študent. Zakladateľ. Staviteľ.",
+    terminal: [
+      ["~", "whoami"],
+      ["", "Peter Šagát — študent, zakladateľ, staviteľ"],
+      ["~", "ls ~/staviam"],
+      ["", "stepra/   weberv/   tento-web/"],
+      ["~", "cat stav.txt"],
+      ["", "● prijímam nové projekty"],
+    ],
     body: [
       "Som Peter, študent zo Slovenska. S Oliverom vedieme Weberv — staviame a modernizujeme weby pre firmy na Slovensku a v Európe.",
       "Keď nerobím pre klientov, staviam Stepru. Mám rád weby, ktoré sa rýchlo načítajú, dobre sa čítajú a ľudí presvedčia, aby sa ozvali.",

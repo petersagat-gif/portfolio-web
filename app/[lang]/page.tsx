@@ -4,6 +4,7 @@ import Reveal from "@/components/Reveal";
 import { contact, dictionaries, hasLocale, localePath, siteUrl } from "@/content/i18n";
 import { projects } from "@/content/projects";
 import Stage3D from "@/components/Stage3D";
+import { Marquee } from "@/components/Art";
 import { About, Compare, Contact, Footer, Hero, Pricing, Process, Stepra, Toolkit, Work } from "@/components/sections";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
@@ -67,11 +68,13 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
           <Process t={t} />
           <Work lang={lang} t={t} />
         </div>
+        <Marquee variant="ticker" items={t.marquee.services} />
         <Compare t={t} />
         <Toolkit t={t} />
         <Stepra t={t} />
         <About t={t} />
         <Pricing t={t} />
+        <Marquee variant="band" items={[t.contact.cta, t.contact.cta, t.contact.cta]} />
         <Contact t={t} />
         <Reveal />
       </main>
