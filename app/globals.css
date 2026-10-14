@@ -173,25 +173,31 @@ video {
   }
 }
 
-/* The surname "gets built" on load: hairline outline → full weight. Width axis stays fixed,
-   the line never wraps, so nothing around it moves. */
-.hero-solid {
-  animation: build-name 1.6s 0.35s var(--ease-out) both;
+/* On load a cobalt scan line sweeps across the name (the same motif as the 3D "live" reveal)
+   and the full stop blinks like a caret. Transform/opacity only: no layout work per frame. */
+.hero-name {
+  position: relative;
 }
-@keyframes build-name {
-  from {
-    font-weight: 100;
-    color: transparent;
-    -webkit-text-stroke: 1.5px var(--paper);
-  }
-  60% {
-    color: transparent;
-  }
-  to {
-    font-weight: 900;
-    color: var(--paper);
-    -webkit-text-stroke: 0 transparent;
-  }
+.hero-name::after {
+  content: "";
+  position: absolute;
+  inset: -4% auto -4% 0;
+  width: 3px;
+  background: var(--cobalt);
+  box-shadow: 0 0 24px 6px rgb(61 91 255 / 0.55);
+  opacity: 0;
+  animation: scan 1.5s 0.3s var(--ease-out) both;
+}
+@keyframes scan {
+  0% { transform: translateX(0); opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateX(min(88vw, 76rem)); opacity: 0; }
+}
+.caret {
+  animation: caret 0.9s 0.3s steps(1) 3 both;
+}
+@keyframes caret {
+  50% { opacity: 0; }
 }
 .build[data-done] {
   --dot: var(--cobalt);
@@ -389,7 +395,7 @@ html:not(.has-3d) .with-3d {
 /* ── Film grain ───────────────────────────────────────────────────────── */
 .grain {
   position: fixed;
-  inset: -50%;
+  inset: -8%;
   z-index: 70;
   pointer-events: none;
   opacity: 0.06;

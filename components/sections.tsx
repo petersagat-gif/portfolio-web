@@ -22,9 +22,9 @@ export function Hero({ t }: T) {
       <p className="label mb-5 md:mb-7">{t.hero.role}</p>
       <h1 className="display hero-name">
         <span className="outline-type block">{t.hero.first}</span>
-        <span className="hero-solid block">
+        <span className="block">
           {t.hero.last}
-          <span className="text-cobalt">.</span>
+          <span className="caret text-cobalt">.</span>
         </span>
       </h1>
       <div className="cols mt-8 items-end gap-y-6 md:mt-10">

@@ -1,15 +1,15 @@
 "use client";
 
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { loadGsap } from "@/lib/gsap";
+import { onFirstInteraction } from "@/lib/idle";
 import { tick } from "@/lib/sound";
 
-gsap.registerPlugin(ScrollTrigger);
+type Lenis = import("lenis").default;
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/** Site-wide chrome: inertial scrolling, film grain, UI sounds and the nav's build status. */
+/** Site-wide chrome: inertial scrolling, film grain, UI sounds, magnetic buttons and the nav's build status. */
 export default function Chrome() {
   const lenis = useRef<Lenis | null>(null);
   const path = usePathname();
@@ -21,20 +21,31 @@ export default function Chrome() {
       if (hit && hit !== (e.relatedTarget as Element | null)?.closest?.("a, button")) tick();
     };
     document.addEventListener("pointerover", over, { passive: true });
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      return () => document.removeEventListener("pointerover", over);
-    }
-    const l = new Lenis({ autoRaf: false, anchors: true, lerp: 0.11 });
-    lenis.current = l;
-    l.on("scroll", ScrollTrigger.update);
-    const raf = (time: number) => l.raf(time * 1000);
-    gsap.ticker.add(raf);
-    gsap.ticker.lagSmoothing(0);
+    if (reduced()) return () => document.removeEventListener("pointerover", over);
+
+    // Smooth scrolling is a nicety: start it on the first interaction.
+    let alive = true;
+    let stop = () => {};
+    const cancel = onFirstInteraction(async () => {
+      const [{ gsap, ScrollTrigger }, { default: Lenis }] = await Promise.all([loadGsap(), import("lenis")]);
+      if (!alive) return;
+      const l = new Lenis({ autoRaf: false, anchors: true, lerp: 0.11 });
+      lenis.current = l;
+      l.on("scroll", ScrollTrigger.update);
+      const raf = (time: number) => l.raf(time * 1000);
+      gsap.ticker.add(raf);
+      gsap.ticker.lagSmoothing(0);
+      stop = () => {
+        gsap.ticker.remove(raf);
+        l.destroy();
+        lenis.current = null;
+      };
+    });
     return () => {
+      alive = false;
       document.removeEventListener("pointerover", over);
-      gsap.ticker.remove(raf);
-      l.destroy();
-      lenis.current = null;
+      cancel();
+      stop();
     };
   }, []);
 
@@ -55,13 +66,12 @@ export default function Chrome() {
       .querySelectorAll<HTMLElement>("[data-stage-block], main section:not(#process), footer")
       .forEach((el) => io.observe(el));
 
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return () => io.disconnect();
-
-    // Magnetic buttons: they lean towards the pointer, then spring back.
-    const fine = matchMedia("(hover: hover) and (pointer: fine)").matches;
+    // Magnetic buttons: they lean towards the pointer, then spring back. GSAP loads on first hover.
+    const fine = matchMedia("(hover: hover) and (pointer: fine)").matches && !reduced();
     const mags = fine ? [...document.querySelectorAll<HTMLElement>("[data-magnetic], .btn-primary")] : [];
     const offs = mags.map((el) => {
-      const move = (e: PointerEvent) => {
+      const move = async (e: PointerEvent) => {
+        const { gsap } = await loadGsap();
         const r = el.getBoundingClientRect();
         gsap.to(el, {
           x: (e.clientX - r.left - r.width / 2) * 0.3,
@@ -70,7 +80,10 @@ export default function Chrome() {
           ease: "power3.out",
         });
       };
-      const leave = () => gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: "elastic.out(1, 0.4)" });
+      const leave = async () => {
+        const { gsap } = await loadGsap();
+        gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: "elastic.out(1, 0.4)" });
+      };
       el.addEventListener("pointermove", move);
       el.addEventListener("pointerleave", leave);
       return () => {

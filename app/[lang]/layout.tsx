@@ -16,8 +16,9 @@ const display = Anybody({
 const sans = Schibsted_Grotesk({ subsets: ["latin", "latin-ext"], variable: "--font-schibsted" });
 const mono = Martian_Mono({ subsets: ["latin", "latin-ext"], variable: "--font-martian", preload: false });
 
-// Decide 3D vs. static before first paint so fallbacks never cause layout shift.
-const detect3d = `try{var c=document.createElement('canvas'),g=c.getContext('webgl2')||c.getContext('webgl');if(g&&!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('has-3d')}var x=g&&g.getExtension('WEBGL_lose_context');x&&x.loseContext()}catch(e){}`;
+// Decide 3D vs. static before first paint so fallbacks never shift the layout. Kept free on purpose:
+// no WebGL context here. The real GPU check runs later, off the critical path (see Stage3D).
+const detect3d = `if(window.WebGLRenderingContext&&!matchMedia('(prefers-reduced-motion: reduce)').matches)document.documentElement.classList.add('has-3d')`;
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));

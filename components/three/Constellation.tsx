@@ -18,7 +18,7 @@ export default function Constellation({ mobile }: { mobile: boolean }) {
   const host = useMemo(() => document.querySelector<HTMLElement>("[data-toolkit]")!, []);
   const labels = useMemo(() => [...host.querySelectorAll<HTMLElement>("[data-skill]")], [host]);
   const note = useMemo(() => host.querySelector<HTMLElement>("[data-skill-note]")!, [host]);
-  const r = useRef({ x: 0.35, y: 0, vy: 0.14, dragging: false, lastX: 0, active: -1 });
+  const r = useRef({ x: 0.35, y: 0, vy: 0.14, dragging: false, lastX: 0, active: -1, faceY: NaN });
 
   const { points, lines, nodes } = useMemo(() => {
     const n = labels.length;
@@ -70,17 +70,24 @@ export default function Constellation({ mobile }: { mobile: boolean }) {
     const up = () => (st.dragging = false);
     const offs = labels.map((l, i) => {
       const on = () => show(i);
-      const off = () => show(-1);
+      // Keyboard focus turns the sphere so the focused skill faces the viewer.
+      const face = () => {
+        const p = points[i];
+        const target = Math.atan2(-p.x, p.z);
+        st.faceY = st.y + ((((target - st.y) % (Math.PI * 2)) + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+        show(i);
+      };
+      const off = () => ((st.faceY = NaN), show(-1));
       const tap = () => show(st.active === i ? -1 : i); // touch: tap toggles, no hover-only content
       l.addEventListener("pointerenter", on);
       l.addEventListener("pointerleave", off);
-      l.addEventListener("focus", on);
+      l.addEventListener("focus", face);
       l.addEventListener("blur", off);
       l.addEventListener("click", tap);
       return () => {
         l.removeEventListener("pointerenter", on);
         l.removeEventListener("pointerleave", off);
-        l.removeEventListener("focus", on);
+        l.removeEventListener("focus", face);
         l.removeEventListener("blur", off);
         l.removeEventListener("click", tap);
       };
@@ -100,13 +107,14 @@ export default function Constellation({ mobile }: { mobile: boolean }) {
       nodes.geometry.dispose();
       (nodes.material as THREE.Material).dispose();
     };
-  }, [host, labels, note, lines, nodes]);
+  }, [host, labels, note, lines, nodes, points]);
 
   const v = useMemo(() => new THREE.Vector3(), []);
   const m = useMemo(() => new THREE.Matrix4(), []);
   useFrame((_, dt) => {
     const st = r.current;
-    if (!st.dragging) {
+    if (!Number.isNaN(st.faceY)) st.y += (st.faceY - st.y) * Math.min(1, dt * 5);
+    else if (!st.dragging) {
       const paused = st.active >= 0 ? 0 : 0.14;
       st.vy += (paused - st.vy) * Math.min(1, dt * 1.5);
       st.y += st.vy * dt;
@@ -124,7 +132,10 @@ export default function Constellation({ mobile }: { mobile: boolean }) {
       v.project(cam.current);
       const el = labels[i];
       el.style.transform = `translate3d(${((v.x + 1) / 2) * size.width}px, ${((1 - v.y) / 2) * size.height}px, 0) translate(-50%, -50%) scale(${0.78 + depth * 0.32})`;
-      el.style.opacity = String(0.35 + depth * 0.65);
+      // Back half: hidden and not clickable, so labels never overlap as targets. Front: contrast-safe.
+      const back = depth < 0.4 && i !== st.active;
+      el.style.opacity = back ? "0" : String(0.62 + depth * 0.38);
+      el.style.pointerEvents = back ? "none" : "";
       el.style.zIndex = String(Math.round(depth * 100));
     });
     nodes.instanceMatrix.needsUpdate = true;

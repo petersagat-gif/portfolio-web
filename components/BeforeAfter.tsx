@@ -1,8 +1,8 @@
 "use client";
 
-import { gsap } from "gsap";
 import { useEffect, useRef } from "react";
 import type { Dict } from "@/content/i18n";
+import { loadGsap } from "@/lib/gsap";
 import { tick } from "@/lib/sound";
 
 /** Draggable before/after comparison. Pointer, touch and keyboard (role="slider"). */
@@ -15,7 +15,9 @@ export default function BeforeAfter({ before, after, t }: { before: string; afte
     const handle = knob.current!;
     let pos = 50;
     // Weighted follow: the divider trails the finger slightly, which is what makes it feel physical.
-    const to = gsap.quickTo(el, "--pos", { duration: 0.45, ease: "power3.out" });
+    // Until GSAP has loaded it simply jumps.
+    let to = (v: number) => el.style.setProperty("--pos", String(v));
+    const upgrade = () => loadGsap().then(({ gsap }) => (to = gsap.quickTo(el, "--pos", { duration: 0.45, ease: "power3.out" })));
     const set = (v: number) => {
       const next = Math.min(100, Math.max(0, v));
       if ((pos - 50) * (next - 50) < 0) {
@@ -61,9 +63,12 @@ export default function BeforeAfter({ before, after, t }: { before: string; afte
     // A one-time nudge when it scrolls into view, so people see it can be dragged.
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const io = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting || reduce) return;
+      async ([entry]) => {
+        if (!entry.isIntersecting) return;
         io.disconnect();
+        await upgrade(); // GSAP loads when the slider first comes into view
+        if (reduce) return;
+        const { gsap } = await loadGsap();
         gsap.timeline({ delay: 0.3 }).to(el, { "--pos": 64, duration: 0.6, ease: "power2.inOut" }).to(el, {
           "--pos": 50,
           duration: 0.9,

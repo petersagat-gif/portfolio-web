@@ -1,7 +1,7 @@
 "use client";
 
-import { gsap } from "gsap";
 import { useEffect, useRef } from "react";
+import { loadGsap } from "@/lib/gsap";
 
 /**
  * A dot that trails the pointer and morphs: a ring over links, a labelled disc over
@@ -17,13 +17,26 @@ export default function Cursor({ open, drag }: { open: string; drag: string }) {
     const el = dot.current!;
     const root = document.documentElement;
     const text: Record<string, string> = { open, drag };
-    const x = gsap.quickTo(el, "x", { duration: 0.35, ease: "power3" });
-    const y = gsap.quickTo(el, "y", { duration: 0.35, ease: "power3" });
+    // Follow the pointer directly until GSAP has loaded (first move), then with a soft lag.
+    let x: (v: number) => unknown = (v) => el.style.setProperty("translate", `${v}px ${lastY}px`);
+    let y: (v: number) => unknown = (v) => (lastY = v);
+    let lastY = 0;
+    let upgraded = false;
+    const upgrade = () =>
+      loadGsap().then(({ gsap }) => {
+        el.style.removeProperty("translate");
+        x = gsap.quickTo(el, "x", { duration: 0.35, ease: "power3" });
+        y = gsap.quickTo(el, "y", { duration: 0.35, ease: "power3" });
+      });
 
     const move = (e: PointerEvent) => {
       root.classList.add("has-cursor");
-      x(e.clientX);
+      if (!upgraded) {
+        upgraded = true;
+        void upgrade();
+      }
       y(e.clientY);
+      x(e.clientX);
       const t = e.target as Element;
       const mode = root.hasAttribute("data-cursor-open") // set by the 3D gallery on hover
         ? "open"
