@@ -51,8 +51,8 @@ const en = {
     ],
   },
   work: {
-    title: "Selected work",
-    intro: "Real sites for real businesses. Open one to see the problem, what I did and how it turned out.",
+    title: "Things I’ve built",
+    intro: "A startup, a studio and the site you’re on. Client work joins this list as it launches.",
     open: "Open case study",
     visit: "Visit live site",
     problem: "The problem",
@@ -66,7 +66,8 @@ const en = {
   },
   compare: {
     title: "Before / After",
-    intro: "The old site on the left, my redesign on the right. Drag to compare.",
+    intro: "What modernising a business site looks like. Drag the handle to compare.",
+    caption: "Illustration: a typical early-2000s site and the same business, redesigned.",
     before: "Before",
     after: "After",
     handle: "Comparison position",
@@ -179,8 +180,8 @@ const sk: Dict = {
     ],
   },
   work: {
-    title: "Vybrané projekty",
-    intro: "Skutočné weby pre skutočné firmy. Otvorte projekt a uvidíte problém, riešenie aj výsledok.",
+    title: "Čo staviam",
+    intro: "Startup, štúdio a web, na ktorom práve ste. Klientske projekty pribudnú, keď sa spustia.",
     open: "Otvoriť prípadovú štúdiu",
     visit: "Navštíviť web",
     problem: "Problém",
@@ -194,7 +195,8 @@ const sk: Dict = {
   },
   compare: {
     title: "Pred / Po",
-    intro: "Pôvodný web vľavo, môj redizajn vpravo. Potiahnutím porovnáte.",
+    intro: "Takto vyzerá modernizácia firemného webu. Potiahnite posúvač a porovnajte.",
+    caption: "Ilustrácia: typický web zo začiatku 2000-tych rokov a tá istá firma po redizajne.",
     before: "Pred",
     after: "Po",
     handle: "Pozícia porovnania",

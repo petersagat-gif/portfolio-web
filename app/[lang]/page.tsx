@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { contact, dictionaries, hasLocale, siteUrl } from "@/content/i18n";
+import { contact, dictionaries, hasLocale, localePath, siteUrl } from "@/content/i18n";
+import { projects } from "@/content/projects";
+import Stage3D from "@/components/Stage3D";
 import { About, Compare, Contact, Footer, Hero, Pricing, Process, Stepra, Toolkit, Work } from "@/components/sections";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
@@ -71,6 +73,22 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         <Pricing t={t} />
         <Contact t={t} />
       </main>
+      <Stage3D
+        screens={projects.map((p) => ({
+          href: localePath(lang, `/work/${p.slug}`),
+          src: p.media.src,
+          video: p.media.type === "video",
+          accent: p.accent,
+        }))}
+        copy={{
+          first: t.hero.first,
+          last: t.hero.last,
+          pitch: t.hero.pitch,
+          role: t.hero.role,
+          cta: t.contact.cta,
+          nav: t.nav.cta,
+        }}
+      />
       <Footer t={t} />
     </>
   );

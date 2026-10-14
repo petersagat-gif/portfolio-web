@@ -123,6 +123,13 @@ video {
     background-size: calc(100% / 12) 100%;
   }
 }
+[data-stage="design"] .guides {
+  --guides: 0.6;
+}
+[data-stage="live"] .guides,
+[data-stage="ready"] .guides {
+  --guides: 0.25;
+}
 
 /* ── Status dot (deploy-log vocabulary) ───────────────────────────────── */
 .dot {
@@ -164,6 +171,103 @@ video {
   .hero-name {
     font-size: min(11.2vw, 13rem);
   }
+}
+
+/* The surname "gets built" on load: hairline outline → full weight. Width axis stays fixed,
+   the line never wraps, so nothing around it moves. */
+.hero-solid {
+  animation: build-name 1.6s 0.35s var(--ease-out) both;
+}
+@keyframes build-name {
+  from {
+    font-weight: 100;
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--paper);
+  }
+  60% {
+    color: transparent;
+  }
+  to {
+    font-weight: 900;
+    color: var(--paper);
+    -webkit-text-stroke: 0 transparent;
+  }
+}
+.build[data-done] {
+  --dot: var(--cobalt);
+}
+
+/* ── Toolkit ──────────────────────────────────────────────────────────── */
+.skill {
+  text-align: left;
+}
+html:not(.has-3d) .toolkit ul {
+  display: grid;
+  gap: 2rem 2.5rem;
+  padding-block: 10svh;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+}
+html:not(.has-3d) .skill {
+  font-weight: 600;
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  width: 100%;
+}
+html:not(.has-3d) .skill-note {
+  display: block;
+  margin-top: 0.25rem;
+  font-weight: 400;
+  color: rgb(236 233 226 / 0.7);
+}
+html:not(.has-3d) .toolkit-note {
+  display: none;
+}
+.has-3d .toolkit {
+  position: relative;
+  height: 92svh;
+  touch-action: pan-y;
+  cursor: grab;
+  overflow: hidden;
+}
+.has-3d .toolkit li {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.has-3d .skill {
+  display: block;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  padding: 0.55em 1em;
+  border-radius: 999px;
+  background: rgb(11 13 18 / 0.72);
+  box-shadow: inset 0 0 0 1px rgb(236 233 226 / 0.22);
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+}
+.has-3d .skill:hover,
+.has-3d .skill[data-active] {
+  background: var(--cobalt);
+  color: #fff;
+}
+.has-3d .skill-note {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.has-3d .toolkit-note {
+  position: absolute;
+  left: var(--gutter);
+  bottom: 6svh;
+  max-width: 34ch;
+  min-height: 3em;
+  pointer-events: none;
+  color: var(--link);
 }
 
 /* ── Before / after ───────────────────────────────────────────────────── */

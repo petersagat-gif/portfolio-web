@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { dictionaries, hasLocale, localePath } from "@/content/i18n";
-import { projects } from "@/content/projects";
+import { projectName, projects } from "@/content/projects";
 
 // Every case study is prerendered. Letting the navigation wait for it (instead of streaming a
 // param-free shell first) means the page commits in one go, so the shared-title view transition can form.
@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug
   if (!p || !hasLocale(lang)) return {};
   const path = `/work/${slug}`;
   return {
-    title: p.name,
+    title: projectName(p, lang),
     description: p.text[lang].line,
     alternates: {
       canonical: localePath(lang, path),
@@ -46,7 +46,7 @@ export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slu
           <span aria-hidden>←</span> {t.back}
         </Link>
         <ViewTransition name={`title-${p.slug}`} share="morph" default="none">
-          <h1 className="display mt-8 text-[clamp(3rem,11vw,11rem)]">{p.name}</h1>
+          <h1 className="display mt-8 text-[clamp(3rem,11vw,11rem)]">{projectName(p, lang)}</h1>
         </ViewTransition>
         <div className="cols mt-8 gap-y-8">
           <p className="lead col-span-4 max-w-[38ch] md:col-span-6">{c.line}</p>
@@ -70,7 +70,7 @@ export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slu
           {p.media.type === "video" ? (
             <video src={p.media.src} poster={p.media.poster} autoPlay muted loop playsInline className="w-full" />
           ) : (
-            <img src={p.media.src} alt={p.name} className="aspect-[16/10] w-full object-cover object-top" />
+            <img src={p.media.src} alt={projectName(p, lang)} className="aspect-[16/10] w-full object-cover object-top" />
           )}
         </div>
       </figure>
@@ -88,17 +88,19 @@ export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slu
         ))}
       </div>
 
-      <div className="wrap mt-[10svh] flex flex-wrap gap-3">
-        <a href={p.url} target="_blank" rel="noopener" className="btn btn-primary">
-          {t.visit} <span aria-hidden>↗</span>
-        </a>
-      </div>
+      {p.url ? (
+        <div className="wrap mt-[10svh] flex flex-wrap gap-3">
+          <a href={p.url} target="_blank" rel="noopener" className="btn btn-primary">
+            {t.visit} <span aria-hidden>↗</span>
+          </a>
+        </div>
+      ) : null}
 
       <nav aria-label={t.next} className="wrap mt-[14svh] border-t border-line pt-8">
         <p className="label">{t.next}</p>
         <Link href={localePath(lang, `/work/${next.slug}`)} className="group mt-4 block" data-cursor="open">
           <span className="display block text-[clamp(2.4rem,8vw,8rem)] transition-colors group-hover:text-link">
-            {next.name} <span aria-hidden>→</span>
+            {projectName(next, lang)} <span aria-hidden>→</span>
           </span>
         </Link>
       </nav>

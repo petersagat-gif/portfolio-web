@@ -1,7 +1,8 @@
 // Home page sections. Server components: copy arrives as HTML, interactivity lives in small client islands.
 import Link from "next/link";
+import { ViewTransition } from "react";
 import { contact, localePath, type Dict, type Locale } from "@/content/i18n";
-import { comparisons, projects } from "@/content/projects";
+import { comparisons, projectName, projects } from "@/content/projects";
 import BeforeAfter from "./BeforeAfter";
 import CopyEmail from "./CopyEmail";
 import ViewportSize from "./ViewportSize";
@@ -11,11 +12,17 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 export function Hero({ t }: T) {
   return (
-    <section id="top" className="wrap relative flex min-h-svh flex-col justify-end pb-5 pt-28">
+    <section id="top" className="wrap relative z-10 flex min-h-svh flex-col justify-end pb-5 pt-28">
+      {/* Without WebGL (or with reduced motion) the hero object is shown as a drawing. */}
+      <img
+        src="/work/this-site.svg"
+        alt=""
+        className="static-only pointer-events-none absolute right-0 top-20 -z-10 w-[min(58vw,820px)] opacity-90 max-md:hidden"
+      />
       <p className="label mb-5 md:mb-7">{t.hero.role}</p>
       <h1 className="display hero-name">
         <span className="outline-type block">{t.hero.first}</span>
-        <span className="block">
+        <span className="hero-solid block">
           {t.hero.last}
           <span className="text-cobalt">.</span>
         </span>
@@ -34,6 +41,9 @@ export function Hero({ t }: T) {
       </div>
       <div className="label mt-10 flex items-center justify-between border-t border-line pt-4">
         <ViewportSize />
+        <span className="with-3d build inline-flex items-center gap-2" data-build-wrap aria-hidden>
+          <span className="dot" /> {t.hero.loading} <span data-build>0%</span>
+        </span>
         <span>
           {t.hero.scroll} <span aria-hidden>↓</span>
         </span>
@@ -46,14 +56,14 @@ const stageKeys = ["wireframe", "design", "live"] as const;
 
 export function Process({ t }: T) {
   return (
-    <section id="process" aria-labelledby="process-title" className="relative">
+    <section id="process" aria-labelledby="process-title" className="relative z-10">
       <h2 id="process-title" className="wrap label pt-[12svh]">
         {t.process.label}
       </h2>
       <ol>
         {t.process.stages.map((s, i) => (
           <li key={s.name} data-stage-block={stageKeys[i]} className="wrap cols min-h-svh items-end md:items-center">
-            <div className="caption col-span-4 pb-[8svh] md:col-span-4 md:pb-0">
+            <div className="caption col-span-4 pb-[8svh] max-md:bg-gradient-to-t max-md:from-ink max-md:via-ink/85 max-md:pt-20 md:col-span-4 md:pb-0">
               <p className="display outline-type text-[clamp(4.5rem,10vw,9rem)]" aria-hidden>
                 {pad(i + 1)}
               </p>
@@ -69,7 +79,7 @@ export function Process({ t }: T) {
 
 export function Work({ lang, t }: T & { lang: Locale }) {
   return (
-    <section id="work" aria-labelledby="work-title" className="relative">
+    <section id="work" aria-labelledby="work-title" className="relative z-10">
       <div className="wrap flex min-h-svh flex-col justify-end pb-[14svh]">
         <h2 id="work-title" className="display text-[clamp(3rem,11vw,11rem)]">
           {t.work.title}
@@ -88,15 +98,19 @@ export function Work({ lang, t }: T & { lang: Locale }) {
             <p className="label">
               {pad(i + 1)} / {pad(projects.length)} · {p.year}
             </p>
-            <h3 className="display mt-3 text-[clamp(2.4rem,7vw,7rem)]">{p.name}</h3>
+            <ViewTransition name={`title-${p.slug}`} share="morph" default="none">
+              <h3 className="display mt-3 text-[clamp(2.4rem,7vw,7rem)]">{projectName(p, lang)}</h3>
+            </ViewTransition>
             <p className="lead mt-4 max-w-[40ch] text-paper/80">{p.text[lang].line}</p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Link href={localePath(lang, `/work/${p.slug}`)} className="btn btn-primary" data-cursor="open">
                 {t.work.open} <span aria-hidden>→</span>
               </Link>
-              <a href={p.url} target="_blank" rel="noopener" className="btn btn-ghost">
-                {t.work.visit} <span aria-hidden>↗</span>
-              </a>
+              {p.url ? (
+                <a href={p.url} target="_blank" rel="noopener" className="btn btn-ghost">
+                  {t.work.visit} <span aria-hidden>↗</span>
+                </a>
+              ) : null}
             </div>
           </li>
         ))}
@@ -107,7 +121,7 @@ export function Work({ lang, t }: T & { lang: Locale }) {
 
 export function Compare({ t }: T) {
   return (
-    <section id="compare" aria-labelledby="compare-title" className="relative z-10 bg-ink py-[16svh]">
+    <section id="compare" aria-labelledby="compare-title" className="relative z-10 py-[16svh]">
       <div className="wrap">
         <h2 id="compare-title" className="display text-[clamp(2.6rem,8vw,8rem)]">
           {t.compare.title}
@@ -116,9 +130,9 @@ export function Compare({ t }: T) {
           <p className="lead col-span-4 max-w-[30ch] md:col-span-3">{t.compare.intro}</p>
           <div className="col-span-4 space-y-10 md:col-span-9">
             {comparisons.map((c) => (
-              <figure key={c.name}>
+              <figure key={c.id}>
                 <BeforeAfter before={c.before} after={c.after} t={t.compare} />
-                <figcaption className="label mt-3">{c.name}</figcaption>
+                <figcaption className="label mt-3">{t.compare.caption}</figcaption>
               </figure>
             ))}
           </div>
@@ -130,7 +144,7 @@ export function Compare({ t }: T) {
 
 export function Toolkit({ t }: T) {
   return (
-    <section id="toolkit" aria-labelledby="toolkit-title" className="relative z-10 bg-ink">
+    <section id="toolkit" aria-labelledby="toolkit-title" className="relative z-10">
       <div className="wrap cols pt-[14svh]">
         <h2 id="toolkit-title" className="display col-span-4 text-[clamp(2.6rem,8vw,8rem)] md:col-span-8">
           {t.toolkit.title}
@@ -139,15 +153,20 @@ export function Toolkit({ t }: T) {
           {t.toolkit.intro}
         </p>
       </div>
-      <div data-toolkit className="with-3d relative h-[90svh]" />
-      <ul className="static-only wrap cols gap-y-8 py-[10svh]">
-        {t.toolkit.skills.map(([name, note]) => (
-          <li key={name} className="col-span-4 border-t border-line pt-4 md:col-span-4 md:pr-8">
-            <p className="font-semibold">{name}</p>
-            <p className="mt-1 text-paper/70">{note}</p>
-          </li>
-        ))}
-      </ul>
+      {/* With 3D these buttons are moved onto a turning sphere; without it they are a plain list. */}
+      <div data-toolkit className="toolkit wrap">
+        <ul>
+          {t.toolkit.skills.map(([name, note]) => (
+            <li key={name}>
+              <button type="button" data-skill data-note={note} className="skill">
+                {name}
+                <span className="skill-note">{note}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p data-skill-note className="toolkit-note lead" aria-hidden />
+      </div>
     </section>
   );
 }
@@ -187,7 +206,7 @@ export function Stepra({ t }: T) {
 
 export function About({ t }: T) {
   return (
-    <section id="about" aria-labelledby="about-title" className="relative z-10 bg-ink py-[18svh]">
+    <section id="about" aria-labelledby="about-title" className="relative z-10 py-[18svh]">
       <div className="wrap cols gap-y-8">
         <p className="label col-span-4 md:col-span-2">{t.about.label}</p>
         <h2 id="about-title" className="display col-span-4 text-[clamp(2.4rem,6.4vw,6.5rem)] md:col-span-10">
@@ -205,7 +224,7 @@ export function About({ t }: T) {
 
 export function Pricing({ t }: T) {
   return (
-    <section id="pricing" aria-labelledby="pricing-title" className="relative z-10 bg-ink pb-[18svh]">
+    <section id="pricing" aria-labelledby="pricing-title" className="relative z-10 pb-[18svh]">
       <div className="wrap">
         <div className="cols gap-y-10 rounded-2xl bg-panel p-6 md:p-12">
           <div className="col-span-4 md:col-span-7">
@@ -239,7 +258,7 @@ export function Pricing({ t }: T) {
 
 export function Contact({ t }: T) {
   return (
-    <section id="contact" aria-labelledby="contact-title" className="relative z-10 bg-ink py-[14svh]">
+    <section id="contact" aria-labelledby="contact-title" className="relative z-10 py-[14svh]">
       <div className="wrap cols gap-y-10">
         <div className="col-span-4 md:col-span-5">
           <p className="label">{t.contact.label}</p>
@@ -284,7 +303,7 @@ export function Contact({ t }: T) {
 
 export function Footer({ t }: T) {
   return (
-    <footer className="relative z-10 bg-ink">
+    <footer className="relative z-10">
       <div data-finale className="with-3d h-[75svh]" aria-hidden />
       <div className="wrap label flex flex-wrap items-center justify-between gap-4 border-t border-line py-6">
         <span>© 2026 Peter Šagát · {t.footer.line}</span>
