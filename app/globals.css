@@ -1,0 +1,271 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+/* ── Tokens ─────────────────────────────────────────────────────────────
+   Two colours from the web's own history: link blue (electrified) and
+   the "under construction" yellow. Everything else is ink and paper. */
+:root {
+  --ink: #0b0d12;
+  --panel: #14171f;
+  --paper: #ece9e2;
+  --graphite: #8b8f9a;
+  --cobalt: #3d5bff; /* fills, glow, large text only (3.8:1 on ink) */
+  --link: #8da0ff; /* small accent text (8:1 on ink) */
+  --caution: #ffc93c; /* build signals + focus ring */
+  --stepra: #3ddc97; /* TODO: Stepra brand colour */
+  --line: rgb(139 143 154 / 0.16);
+  --gutter: clamp(1rem, 3vw, 2.5rem);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-panel: var(--panel);
+  --color-paper: var(--paper);
+  --color-graphite: var(--graphite);
+  --color-cobalt: var(--cobalt);
+  --color-link: var(--link);
+  --color-caution: var(--caution);
+  --color-stepra: var(--stepra);
+  --color-line: var(--line);
+  --font-display: var(--font-anybody), "Arial Black", sans-serif;
+  --font-sans: var(--font-schibsted), system-ui, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, monospace;
+}
+
+/* ── Base ─────────────────────────────────────────────────────────────── */
+html {
+  background: var(--ink);
+  color: var(--paper);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  background: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+::selection {
+  background: var(--cobalt);
+  color: #fff;
+}
+:focus-visible {
+  outline: 2px solid var(--caution);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+/* ── Type ─────────────────────────────────────────────────────────────── */
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 150;
+  font-weight: 900;
+  line-height: 0.86;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+/* "Wireframe" type: hairline outline of the ultra-expanded face. */
+.outline-type {
+  font-weight: 100;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--paper);
+}
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--graphite);
+}
+.lead {
+  font-size: clamp(1.125rem, 1.4vw, 1.375rem);
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────── */
+.wrap {
+  padding-inline: var(--gutter);
+}
+.cols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (min-width: 768px) {
+  .cols {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+}
+
+/* Blueprint column guides. Visible while the site is a "wireframe", fades as it goes live. */
+.guides {
+  position: fixed;
+  inset: 0 var(--gutter);
+  z-index: 0;
+  pointer-events: none;
+  border-right: 1px solid var(--line);
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+  background-size: 25% 100%;
+  opacity: var(--guides, 1);
+  transition: opacity 0.8s var(--ease-out);
+}
+@media (min-width: 768px) {
+  .guides {
+    background-size: calc(100% / 12) 100%;
+  }
+}
+
+/* ── Status dot (deploy-log vocabulary) ───────────────────────────────── */
+.dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--dot, var(--graphite));
+  box-shadow: 0 0 0 0 var(--dot, var(--graphite));
+}
+[data-stage="design"] {
+  --dot: var(--caution);
+}
+[data-stage="live"],
+[data-stage="ready"] {
+  --dot: var(--cobalt);
+}
+
+.status-text::after {
+  content: "wireframe";
+}
+[data-stage="design"] .status-text::after {
+  content: "design";
+}
+[data-stage="live"] .status-text::after {
+  content: "live";
+}
+[data-stage="ready"] .status-text::after {
+  content: "ready";
+}
+
+/* ── Hero name ────────────────────────────────────────────────────────── */
+/* Sized so "ŠAGÁT." at full weight fits one line: ~5.2em wide at wdth 150. */
+.hero-name {
+  font-size: clamp(3rem, 16vw, 13rem);
+  white-space: nowrap;
+}
+@media (min-width: 768px) {
+  .hero-name {
+    font-size: min(11.2vw, 13rem);
+  }
+}
+
+/* ── Before / after ───────────────────────────────────────────────────── */
+.compare-before {
+  clip-path: inset(0 calc(100% - var(--pos) * 1%) 0 0);
+}
+.compare-line {
+  left: calc(var(--pos) * 1%);
+}
+.compare-knob {
+  transition:
+    scale 0.35s var(--ease-out),
+    background-color 0.3s;
+}
+.compare[data-dragging] .compare-knob,
+.compare-knob:hover {
+  scale: 1.15;
+  background: var(--caution);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  border-radius: 999px;
+  padding: 0.95em 1.6em;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+.btn-primary {
+  background: var(--cobalt);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #2f4cf0;
+}
+.btn-ghost {
+  box-shadow: inset 0 0 0 1px rgb(236 233 226 / 0.28);
+}
+.btn-ghost:hover {
+  box-shadow: inset 0 0 0 1px var(--paper);
+}
+.link {
+  color: var(--link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+.link:hover {
+  color: var(--paper);
+}
+
+/* ── 3D vs. static ────────────────────────────────────────────────────
+   An inline script adds .has-3d before first paint when WebGL works and
+   reduced motion is off, so swapping in static fallbacks never shifts layout. */
+.has-3d .static-only {
+  display: none;
+}
+html:not(.has-3d) .with-3d {
+  display: none;
+}
+
+/* ── Film grain ───────────────────────────────────────────────────────── */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 70;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 0.9s steps(5) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-4%, 3%); }
+  40% { transform: translate(3%, -5%); }
+  60% { transform: translate(-6%, -2%); }
+  80% { transform: translate(5%, 4%); }
+}
+
+/* ── Utilities ────────────────────────────────────────────────────────── */
+.sr-only-focusable:not(:focus) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

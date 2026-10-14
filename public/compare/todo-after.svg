@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900">
+<rect width="1440" height="900" fill="#F4F2EE"/>
+<rect x="64" y="52" width="150" height="30" rx="6" fill="#16181D"/><rect x="900" y="60" width="80" height="14" rx="7" fill="#16181D" opacity=".5"/><rect x="1010" y="60" width="80" height="14" rx="7" fill="#16181D" opacity=".5"/><rect x="1120" y="60" width="80" height="14" rx="7" fill="#16181D" opacity=".5"/>
+<rect x="1240" y="44" width="136" height="46" rx="23" fill="#3D5BFF"/>
+<rect x="64" y="210" width="760" height="86" rx="12" fill="#16181D"/><rect x="64" y="318" width="600" height="86" rx="12" fill="#16181D"/>
+<rect x="64" y="450" width="520" height="18" rx="9" fill="#16181D" opacity=".55"/><rect x="64" y="486" width="440" height="18" rx="9" fill="#16181D" opacity=".55"/>
+<rect x="64" y="560" width="230" height="64" rx="32" fill="#3D5BFF"/><rect x="314" y="560" width="190" height="64" rx="32" fill="none" stroke="#16181D" stroke-width="2"/>
+<rect x="900" y="180" width="476" height="600" rx="28" fill="#16181D"/><circle cx="1138" cy="430" r="150" fill="#FFC93C"/><rect x="960" y="660" width="300" height="20" rx="10" fill="#F4F2EE" opacity=".7"/>
+<g transform="translate(970 24)"><rect width="446" height="44" rx="6" fill="#FFC93C"/><text x="18" y="29" font-family="monospace" font-size="17" font-weight="700" fill="#0B0D12">TODO · real 'after' screenshot</text></g>
+</svg>
