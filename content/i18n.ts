@@ -23,6 +23,8 @@ const en = {
     switchTo: "Slovenčina",
     switchShort: "SK",
     home: "Peter Šagát, home",
+    cursorOpen: "Open",
+    cursorDrag: "Drag",
   },
   hero: {
     role: "Web designer & developer — Slovakia",
@@ -152,6 +154,8 @@ const sk: Dict = {
     switchTo: "English",
     switchShort: "EN",
     home: "Peter Šagát, domov",
+    cursorOpen: "Otvoriť",
+    cursorDrag: "Ťahať",
   },
   hero: {
     role: "Webdizajnér a vývojár — Slovensko",

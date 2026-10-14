@@ -70,6 +70,12 @@ export function Process({ t }: T) {
               <h3 className="display mt-4 text-[clamp(2.2rem,4.4vw,4.25rem)]">{s.name}</h3>
               <p className="lead mt-5 max-w-[32ch] text-paper/80">{s.body}</p>
             </div>
+            <img
+              src={`/process/stage-${i + 1}.svg`}
+              alt=""
+              loading="lazy"
+              className="static-only col-span-4 -order-1 w-full max-md:mt-24 md:order-none md:col-span-7 md:col-start-6"
+            />
           </li>
         ))}
       </ol>
@@ -154,7 +160,7 @@ export function Toolkit({ t }: T) {
         </p>
       </div>
       {/* With 3D these buttons are moved onto a turning sphere; without it they are a plain list. */}
-      <div data-toolkit className="toolkit wrap">
+      <div data-toolkit data-cursor="drag" className="toolkit wrap">
         <ul>
           {t.toolkit.skills.map(([name, note]) => (
             <li key={name}>

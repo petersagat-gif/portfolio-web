@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { dictionaries, hasLocale, locales, siteUrl } from "@/content/i18n";
 import Nav from "@/components/Nav";
 import Chrome from "@/components/Chrome";
+import Cursor from "@/components/Cursor";
 import "../globals.css";
 
 // Self-hosted at build time by next/font (no requests to Google at runtime).
@@ -65,6 +66,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <Nav lang={lang} t={t.nav} />
         {children}
         <Chrome />
+        <Cursor open={t.nav.cursorOpen} drag={t.nav.cursorDrag} />
       </body>
     </html>
   );

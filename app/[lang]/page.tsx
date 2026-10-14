@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Reveal from "@/components/Reveal";
 import { contact, dictionaries, hasLocale, localePath, siteUrl } from "@/content/i18n";
 import { projects } from "@/content/projects";
 import Stage3D from "@/components/Stage3D";
@@ -72,6 +73,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
         <About t={t} />
         <Pricing t={t} />
         <Contact t={t} />
+        <Reveal />
       </main>
       <Stage3D
         screens={projects.map((p) => ({

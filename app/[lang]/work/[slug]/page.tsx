@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Reveal from "@/components/Reveal";
 import { ViewTransition } from "react";
 import { dictionaries, hasLocale, localePath } from "@/content/i18n";
 import { projectName, projects } from "@/content/projects";
@@ -104,6 +105,7 @@ export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slu
           </span>
         </Link>
       </nav>
+      <Reveal />
     </main>
   );
 }
