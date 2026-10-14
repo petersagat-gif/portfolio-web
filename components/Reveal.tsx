@@ -7,7 +7,7 @@ import { onFirstInteraction } from "@/lib/idle";
 /**
  * Display headings below the fold reveal line by line as they scroll in. Rendered inside each page
  * (not the layout) so it only touches the DOM after that page has hydrated, and deferred to the
- * first interaction because splitting measures layout (the headings all start below the fold). The hero name has its own animation.
+ * first interaction because splitting measures layout (the headings all start below the fold). The hero wordmark has its own entrance.
  */
 export default function Reveal() {
   useEffect(() => {
@@ -19,7 +19,7 @@ export default function Reveal() {
       if (!alive) return;
       gsap.registerPlugin(SplitText);
       const ctx = gsap.context(() => {
-        document.querySelectorAll<HTMLElement>("main :is(h1, h2, h3).display:not(.hero-name)").forEach((el) => {
+        document.querySelectorAll<HTMLElement>("main :is(.h2, .mark):not(.process *, .hero-mark, .diag *)").forEach((el) => {
           if (el.getBoundingClientRect().top < innerHeight) return; // already on screen: leave it be
           SplitText.create(el, {
             type: "lines",

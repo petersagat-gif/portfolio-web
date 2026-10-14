@@ -1,15 +1,9 @@
 import type { MetadataRoute } from "next";
-import { localePath, locales, siteUrl } from "@/content/i18n";
-import { projects } from "@/content/projects";
+import { siteUrl, work } from "@/content/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const paths = ["/", ...projects.map((p) => `/work/${p.slug}`)];
-  return paths.flatMap((path) =>
-    locales.map((lang) => ({
-      url: siteUrl + localePath(lang, path),
-      alternates: {
-        languages: Object.fromEntries(locales.map((l) => [l, siteUrl + localePath(l, path)])),
-      },
-    })),
-  );
+  return [
+    { url: siteUrl, changeFrequency: "monthly", priority: 1 },
+    ...work.projects.map((p) => ({ url: `${siteUrl}/work/${p.slug}`, changeFrequency: "yearly" as const, priority: 0.7 })),
+  ];
 }

@@ -1,34 +1,41 @@
 @import "tailwindcss";
 @import "lenis/dist/lenis.css";
 
-/* ── Tokens ─────────────────────────────────────────────────────────────
-   Two colours from the web's own history: link blue (electrified) and
-   the "under construction" yellow. Everything else is ink and paper. */
+/* ── WebERV tokens ────────────────────────────────────────────────────────
+   Near-black, off-white, one grey, one accent. The accent (WebERV cobalt) is
+   reserved for interactive states, primary CTAs, project indicators and motion.
+   Shape rule: buttons and chips are pills; everything else is square.
+   z-index scale: canvas 0 · content 10 · nav 50 · menu 60 · grain 80 · cursor 90 · skip-link 100 */
 :root {
-  --ink: #0b0d12;
-  --panel: #14171f;
-  --paper: #ece9e2;
-  --graphite: #8b8f9a;
-  --cobalt: #3d5bff; /* fills, glow, large text only (3.8:1 on ink) */
-  --link: #8da0ff; /* small accent text (8:1 on ink) */
-  --caution: #ffc93c; /* build signals + focus ring */
-  --stepra: #3ddc97; /* TODO: Stepra brand colour */
-  --line: rgb(139 143 154 / 0.16);
-  --gutter: clamp(1rem, 3vw, 2.5rem);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ink: #0b0b0c;
+  --ink-2: #131315;
+  --paper: #ededea;
+  --grey: #8e8e93;
+  --line: rgb(237 237 234 / 0.12);
+  --accent: #3d5bff;
+  --accent-soft: #8da0ff; /* accent for small text on ink (8:1) */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1); /* signature: entrances and most motion */
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45); /* exits */
+  --t-quick: 180ms;
+  --t-base: 450ms;
+  --t-slow: 900ms;
+  --gutter: clamp(1.25rem, 3.2vw, 3rem);
+  --fs-mark: clamp(4.25rem, 14.6vw, 13.75rem);
+  --fs-h1: clamp(2rem, 3.6vw, 3.6rem);
+  --fs-h2: clamp(2.6rem, 7.2vw, 8rem);
+  --fs-h3: clamp(1.6rem, 3.2vw, 3.1rem);
+  --fs-body: clamp(1.0625rem, 0.95rem + 0.35vw, 1.3125rem);
   color-scheme: dark;
 }
 
 @theme inline {
   --color-ink: var(--ink);
-  --color-panel: var(--panel);
+  --color-ink-2: var(--ink-2);
   --color-paper: var(--paper);
-  --color-graphite: var(--graphite);
-  --color-cobalt: var(--cobalt);
-  --color-link: var(--link);
-  --color-caution: var(--caution);
-  --color-stepra: var(--stepra);
+  --color-grey: var(--grey);
   --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --font-display: var(--font-anybody), "Arial Black", sans-serif;
   --font-sans: var(--font-schibsted), system-ui, sans-serif;
   --font-mono: var(--font-martian), ui-monospace, monospace;
@@ -39,505 +46,947 @@ html {
   background: var(--ink);
   color: var(--paper);
   -webkit-text-size-adjust: 100%;
+  scrollbar-color: rgb(237 237 234 / 0.25) var(--ink);
+  scrollbar-width: thin;
+}
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ink);
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(237 237 234 / 0.22);
+  border: 3px solid var(--ink);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }
 body {
   background: var(--ink);
   font-family: var(--font-sans);
-  font-size: 1.0625rem;
+  font-size: var(--fs-body);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   overflow-x: clip;
 }
 ::selection {
-  background: var(--cobalt);
+  background: var(--accent);
   color: #fff;
 }
 :focus-visible {
-  outline: 2px solid var(--caution);
+  outline: 2px solid var(--accent-soft);
   outline-offset: 4px;
   border-radius: 2px;
 }
 img,
-video {
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
 }
+[id] {
+  scroll-margin-top: 5rem;
+}
 
-/* ── Type ─────────────────────────────────────────────────────────────── */
-.display {
+/* ── Type system ──────────────────────────────────────────────────────── */
+/* Wordmark: ultra-expanded, heaviest. Headings: semi-expanded. Body: grotesk. Meta: mono. */
+.mark {
   font-family: var(--font-display);
   font-variation-settings: "wdth" 150;
   font-weight: 900;
-  line-height: 0.86;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  line-height: 0.82;
+  letter-spacing: -0.03em;
 }
-/* "Wireframe" type: hairline outline of the ultra-expanded face. */
-.outline-type {
-  font-weight: 100;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--paper);
+.h1,
+.h2,
+.h3 {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 112;
+  font-weight: 780;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
 }
-.label {
+.h1 {
+  font-size: var(--fs-h1);
+  line-height: 1;
+}
+.h2 {
+  font-size: var(--fs-h2);
+  line-height: 0.9;
+}
+.h3 {
+  font-size: var(--fs-h3);
+  line-height: 1;
+}
+.h2-long {
+  font-size: clamp(2.3rem, 5.4vw, 5.75rem);
+}
+.meta {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  line-height: 1.4;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--graphite);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--grey);
 }
 .lead {
-  font-size: clamp(1.125rem, 1.4vw, 1.375rem);
-  line-height: 1.45;
+  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.6rem);
+  line-height: 1.4;
   text-wrap: pretty;
+}
+.muted {
+  color: rgb(237 237 234 / 0.68);
 }
 
 /* ── Layout ───────────────────────────────────────────────────────────── */
 .wrap {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
   padding-inline: var(--gutter);
 }
-.cols {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-@media (min-width: 768px) {
-  .cols {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
-}
-
-/* Blueprint column guides. Visible while the site is a "wireframe", fades as it goes live. */
-.guides {
-  position: fixed;
-  inset: 0 var(--gutter);
-  z-index: 0;
-  pointer-events: none;
-  border-right: 1px solid var(--line);
-  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
-  background-size: 25% 100%;
-  opacity: var(--guides, 1);
-  transition: opacity 0.8s var(--ease-out);
-}
-@media (min-width: 768px) {
-  .guides {
-    background-size: calc(100% / 12) 100%;
-  }
-}
-[data-stage="design"] .guides {
-  --guides: 0.6;
-}
-[data-stage="live"] .guides,
-[data-stage="ready"] .guides {
-  --guides: 0.25;
-}
-
-/* ── Status dot (deploy-log vocabulary) ───────────────────────────────── */
-.dot {
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--dot, var(--graphite));
-  box-shadow: 0 0 0 0 var(--dot, var(--graphite));
-}
-[data-stage="design"] {
-  --dot: var(--caution);
-}
-[data-stage="live"],
-[data-stage="ready"] {
-  --dot: var(--cobalt);
-}
-
-.status-text::after {
-  content: "wireframe";
-}
-[data-stage="design"] .status-text::after {
-  content: "design";
-}
-[data-stage="live"] .status-text::after {
-  content: "live";
-}
-[data-stage="ready"] .status-text::after {
-  content: "ready";
-}
-
-/* ── Hero name ────────────────────────────────────────────────────────── */
-/* Sized so "ŠAGÁT." at full weight fits one line: ~5.2em wide at wdth 150. */
-.hero-name {
-  font-size: clamp(3rem, 16vw, 13rem);
-  white-space: nowrap;
-}
-@media (min-width: 768px) {
-  .hero-name {
-    font-size: min(11.2vw, 13rem);
-  }
-}
-
-/* On load a cobalt scan line sweeps across the name (the same motif as the 3D "live" reveal)
-   and the full stop blinks like a caret. Transform/opacity only: no layout work per frame. */
-.hero-name {
-  position: relative;
-  width: fit-content;
-}
-.hero-name::after {
-  content: "";
-  position: absolute;
-  inset: -4% auto -4% 0;
-  width: 3px;
-  background: var(--cobalt);
-  box-shadow: 0 0 24px 6px rgb(61 91 255 / 0.55);
-  opacity: 0;
-  animation: scan 1.5s 0.3s var(--ease-out) both;
-}
-@keyframes scan {
-  0% { left: 0; opacity: 1; }
-  85% { opacity: 1; }
-  100% { left: 100%; opacity: 0; }
-}
-.caret {
-  animation: caret 0.9s 0.3s steps(1) 3 both;
-}
-@keyframes caret {
-  50% { opacity: 0; }
-}
-/* Hero drawing: draws itself on load (2.4 s), then hands over to the 3D object once that has booted. */
-.hero-art {
-  top: 4.75rem;
-  left: 50%;
-  width: min(80vw, 22rem);
-  translate: -50% 0;
-  transition: opacity 0.9s 0.3s var(--ease-out);
-}
-.hero-art img {
-  width: 100%;
-  height: auto;
-}
-.hero-art::before {
-  content: "";
-  position: absolute;
-  inset: 5% 0 0;
-  z-index: -1;
-  background: radial-gradient(closest-side, rgb(61 91 255 / 0.2), transparent);
-}
-@media (min-width: 768px) {
-  .hero-art {
-    top: 11svh;
-    left: auto;
-    right: calc(var(--gutter) * -0.5);
-    width: min(48vw, 46rem);
-    translate: none;
-  }
-}
-html[data-3d-ready] .hero-art {
-  opacity: 0;
-}
-
-/* "Building 0–100%": a CSS counter that runs alongside the drawing, no JavaScript. */
-@property --build {
-  syntax: "<integer>";
-  inherits: false;
-  initial-value: 0;
-}
-.build-count {
-  counter-reset: build var(--build);
-  animation: build 2.4s 0.15s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-}
-.build-count::after {
-  content: counter(build) "%";
-}
-@keyframes build {
-  to {
-    --build: 100;
-  }
-}
-.build .dot {
-  animation: dot-ready 0.01s 2.6s forwards;
-}
-@keyframes dot-ready {
-  to {
-    background: var(--cobalt);
-  }
-}
-
-/* ── Marquees ─────────────────────────────────────────────────────────── */
-.marquee {
+.section {
   position: relative;
   z-index: 10;
+  padding-block: clamp(6rem, 14vh, 11rem);
+}
+
+/* ── Buttons & links (pills) ──────────────────────────────────────────── */
+.btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75em;
+  padding: 1em 1.6em;
+  border-radius: 999px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color var(--t-quick) var(--ease),
+    box-shadow var(--t-quick) var(--ease),
+    scale var(--t-quick) var(--ease);
+}
+.btn:active {
+  scale: 0.97;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+/* A white fill sweeps up from below on hover: the "fill enters from the edge" micro-interaction. */
+.btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--paper);
+  translate: 0 101%;
+  transition: translate var(--t-base) var(--ease);
+}
+.btn-primary:hover {
+  color: var(--ink);
+}
+.btn-primary:hover::before {
+  translate: 0 0;
+}
+.btn-ghost {
+  box-shadow: inset 0 0 0 1px rgb(237 237 234 / 0.3);
+}
+.btn-ghost:hover {
+  box-shadow: inset 0 0 0 1px var(--paper);
+}
+.arrow {
+  display: inline-block;
+  transition: translate var(--t-base) var(--ease);
+}
+.btn:hover .arrow,
+a:hover > .arrow {
+  translate: 0.25em 0;
+}
+.u-link {
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: background-size var(--t-base) var(--ease);
+}
+.u-link:hover {
+  background-size: 100% 1px;
+}
+
+/* ── The WebERV mark: WEB≡RV. The "E" of ERV is three bars, a stack, a menu, a loader. ─ */
+.bars {
+  position: relative;
+  display: inline-block;
+  width: 0.6em;
+  height: 0.7em;
+  margin-inline: 0.03em 0.06em;
+}
+.bars > i {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0.15em;
+  background: var(--accent);
+  transform-origin: left center;
+}
+.bars > i:nth-child(1) {
+  top: 0;
+}
+.bars > i:nth-child(2) {
+  top: calc(50% - 0.075em);
+}
+.bars > i:nth-child(3) {
+  bottom: 0;
+}
+
+/* ── Navigation ───────────────────────────────────────────────────────── */
+/* Difference blending keeps the nav legible over dark and light sections alike. */
+.nav-bar {
+  mix-blend-mode: difference;
+  color: #fff;
+}
+.nav-bar .bars > i {
+  background: #fff;
+}
+/* Logo transformation: past the hero the wordmark folds down to its three bars; hover unfolds it. */
+/* clip-path (not overflow) hides the folded letters, so the baseline stays where the bars expect it */
+.mark-letters {
+  display: inline-block;
+  max-width: 4em;
+  white-space: nowrap;
+  clip-path: inset(-0.3em 0 -0.3em 0);
+  transition:
+    max-width var(--t-base) var(--ease),
+    opacity var(--t-base) var(--ease);
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .nav-mark .mark-letters {
+      animation: fold linear both;
+      animation-timeline: scroll(root);
+      animation-range: 40vh 90vh;
+    }
+    .nav-mark:hover .mark-letters,
+    .nav-mark:focus-visible .mark-letters {
+      animation: none;
+    }
+  }
+}
+@keyframes fold {
+  to {
+    max-width: 0;
+    opacity: 0;
+  }
+}
+.menu-icon {
+  display: grid;
+  gap: 4px;
+  width: 22px;
+  padding: 10px;
+  box-sizing: content-box;
+}
+.menu-icon > i {
+  display: block;
+  height: 2px;
+  background: currentColor;
+  transform-origin: left;
+  transition: scale var(--t-base) var(--ease);
+}
+.menu-btn:hover .menu-icon > i:nth-child(2) {
+  scale: 0.6 1;
+}
+.menu-btn:hover .menu-icon > i:nth-child(3) {
+  scale: 0.3 1;
+}
+
+/* Fullscreen menu (native <dialog>: focus trap, Escape and inert background for free). */
+.menu {
+  width: 100%;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--ink-2);
+  color: var(--paper);
+  overflow-y: auto;
+}
+.menu::backdrop {
+  background: transparent;
+}
+.menu[open] {
+  animation: menu-in 0.7s var(--ease) both;
+}
+.menu[data-closing] {
+  animation: menu-out 0.38s var(--ease-in) both;
+}
+.menu[open] .menu-links > li {
+  animation: rise 0.8s var(--ease) both;
+  animation-delay: calc(0.15s + var(--i) * 60ms);
+}
+@keyframes menu-in {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes menu-out {
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+/* ── Hero entrance: mark → headline → background → nav → CTAs ─────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .intro-mark > span {
+    display: inline-block;
+    animation: rise var(--t-slow) var(--ease) both;
+    animation-delay: calc(var(--i) * 45ms);
+  }
+  .intro-mark .bars > i {
+    animation: bar-in 0.7s var(--ease) both;
+    animation-delay: calc(0.1s + var(--i) * 80ms);
+  }
+  .intro-2 {
+    animation: rise var(--t-slow) var(--ease) 0.35s both;
+  }
+  .intro-4 {
+    animation: fade 0.6s var(--ease) 0.75s both;
+  }
+  .intro-5 {
+    animation: rise 0.7s var(--ease) 0.9s both;
+  }
+  .nav-bar {
+    animation: fade 0.6s var(--ease) 0.75s both;
+  }
+}
+@keyframes rise {
+  from {
+    translate: 0 0.6em;
+    opacity: 0;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes bar-in {
+  from {
+    scale: 0 1;
+  }
+}
+.mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.06em;
+}
+
+/* ── Hero canvas fades in once WebGL is ready (step 3 of the entrance) ─ */
+.gl-slot {
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+html[data-gl-ready] .gl-slot {
+  opacity: 1;
+}
+
+/* ── Statement: words light up as the paragraph scrolls through ───────── */
+.kinetic .w {
+  opacity: 0.16;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .kinetic .w {
+      animation: word-on linear both;
+      animation-timeline: --kinetic;
+      animation-range: cover calc(18% + var(--p) * 38%) cover calc(22% + var(--p) * 38%);
+    }
+    .kinetic {
+      view-timeline-name: --kinetic;
+    }
+  }
+}
+@supports not (animation-timeline: view()) {
+  .kinetic .w {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kinetic .w {
+    opacity: 1;
+  }
+}
+@keyframes word-on {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Scroll-linked reveals and parallax (CSS scroll timelines) ────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal-clip {
+      animation: clip-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
+    .parallax {
+      animation: drift linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@keyframes clip-up {
+  from {
+    clip-path: inset(18% 6% 18% 6%);
+    scale: 1.06;
+  }
+}
+@keyframes drift {
+  from {
+    translate: 0 6%;
+  }
+  to {
+    translate: 0 -6%;
+  }
+}
+
+/* ── Process: vertical scroll drives a horizontal track (no JavaScript) ── */
+.process {
+  view-timeline-name: --process;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .process {
+      height: 520vh;
+    }
+    .process-sticky {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      overflow: hidden;
+    }
+    .process-track {
+      display: flex;
+      width: max-content;
+      animation: process-x linear both;
+      animation-timeline: --process;
+      animation-range: contain 0% contain 100%;
+    }
+    .process-fill {
+      transform-origin: left;
+      animation: grow linear both;
+      animation-timeline: --process;
+      animation-range: contain 0% contain 100%;
+    }
+  }
+}
+@keyframes process-x {
+  to {
+    translate: calc(-100% + 100vw) 0;
+  }
+}
+@keyframes grow {
+  from {
+    scale: 0 1;
+  }
+}
+
+/* ── Light section (the single deliberate theme switch) ───────────────── */
+.light {
+  background: var(--paper);
+  color: var(--ink);
+  --line: rgb(11 11 12 / 0.12);
+}
+.light .meta {
+  color: #5d5d62;
+}
+.light ::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ── Marquee (one per page) ───────────────────────────────────────────── */
+.marquee {
   overflow: hidden;
   white-space: nowrap;
 }
 .marquee-track {
   display: flex;
   width: max-content;
-  animation: marquee 38s linear infinite;
+  animation: marquee 42s linear infinite;
 }
-.marquee-row > span {
-  display: inline-flex;
-  align-items: center;
-}
-.marquee-sep {
-  display: inline-block;
-  margin-inline: 0.45em;
-  font-size: 0.45em;
-  color: var(--cobalt);
-  -webkit-text-stroke: 0;
-}
-.marquee-ticker {
-  background: var(--ink); /* covers the 3D gallery as it scrolls away */
-  padding-block: 2.5rem;
-  border-block: 1px solid var(--line);
-  font-size: clamp(2.6rem, 6.5vw, 6rem);
-}
-.marquee-clip {
-  position: relative;
-  z-index: 10;
-  overflow: hidden;
-  padding-block: 6svh;
-}
-.marquee-band {
-  padding-block: 1.1rem;
-  background: var(--cobalt);
-  color: #fff;
-  font-size: clamp(2rem, 5vw, 4.5rem);
-  rotate: -2deg;
-  scale: 1.04;
-}
-.marquee-band .marquee-sep {
-  color: var(--caution);
-}
-.marquee-band .marquee-track {
-  animation-duration: 26s;
-  animation-direction: reverse;
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
 }
 @keyframes marquee {
   to {
     translate: -50% 0;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
+.outline {
+  color: transparent;
+  -webkit-text-stroke: 1.5px currentColor;
+}
+.light .outline {
+  -webkit-text-stroke-color: var(--ink);
 }
 
-/* ── About: build-log terminal ────────────────────────────────────────── */
-.term {
-  align-self: start;
-  border-radius: 0.875rem;
-  background: var(--panel);
-  box-shadow:
-    inset 0 0 0 1px rgb(236 233 226 / 0.1),
-    0 40px 120px -50px rgb(61 91 255 / 0.5);
+/* ── Work: browser frame whose page scrolls on hover ─────────────────── */
+.browser {
+  background: var(--ink-2);
+  box-shadow: inset 0 0 0 1px var(--line);
   overflow: hidden;
 }
-.term-bar {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid var(--line);
+.browser-page {
+  transition: translate 3.2s cubic-bezier(0.45, 0, 0.2, 1);
 }
-.term-bar > span:not(.label) {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: rgb(236 233 226 / 0.18);
+.browser:hover .browser-page,
+a:focus-visible .browser-page {
+  translate: 0 var(--to, -70%);
 }
-.term-body {
-  padding: 1.25rem 1.25rem 1.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.8125rem;
-  line-height: 1.9;
+
+/* ── Hero ─────────────────────────────────────────────────────────────── */
+.hero-glow {
+  background:
+    radial-gradient(60% 55% at 72% 42%, rgb(61 91 255 / 0.1), transparent 70%),
+    radial-gradient(40% 40% at 70% 45%, rgb(237 237 234 / 0.05), transparent 70%);
 }
-.term-out {
-  color: rgb(236 233 226 / 0.75);
-  padding-left: 1.4em;
+/* The wordmark is sized to span the content width exactly ("WEB≡RV" measures 6.42em). */
+.hero-mark {
+  font-size: min(calc((100vw - 2 * var(--gutter) - 12px) / 6.45), 13.75rem);
+  white-space: nowrap;
 }
-.term-caret {
+.hero-letter {
   display: inline-block;
-  width: 0.6em;
-  height: 1.1em;
-  vertical-align: -0.2em;
-  background: var(--caution);
-  animation: caret 1s steps(1) infinite;
+  transform-origin: 50% 100%;
+  transition: color var(--t-base) var(--ease);
 }
-/* Each line "types" in as the terminal scrolls into view (scroll-driven, no JavaScript). */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .term-body > p {
-      animation: type linear both;
-      animation-timeline: view();
-      animation-range: cover calc(5% + var(--i) * 3%) cover calc(11% + var(--i) * 3%);
-    }
-  }
+.hero-letter:hover {
+  color: transparent;
+  -webkit-text-stroke: 2px var(--paper);
 }
+.hero-mark > span:has(.bars) {
+  display: inline-block;
+}
+.footer-mark {
+  font-size: clamp(3rem, 9vw, 7.5rem);
+}
+.work-counter {
+  top: auto;
+  left: auto;
+  right: var(--gutter);
+  bottom: 1.5rem;
+  translate: none;
+  opacity: 0;
+  transition: opacity var(--t-base) var(--ease);
+}
+.work-counter[data-on="1"] {
+  opacity: 1;
+}
+
+/* ── Capability demos ─────────────────────────────────────────────────── */
+.demo {
+  --demo-line: rgb(237 237 234 / 0.1);
+}
+.demo-grid {
+  background-image: linear-gradient(90deg, var(--demo-line) 1px, transparent 1px);
+  background-size: calc(100% / 12) 100%;
+  border-right: 1px solid var(--demo-line);
+}
+.demo-block {
+  background: rgb(237 237 234 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(237 237 234 / 0.18);
+  transition:
+    left 0.9s var(--ease),
+    top 0.9s var(--ease),
+    width 0.9s var(--ease),
+    height 0.9s var(--ease);
+}
+.demo-code > span {
+  clip-path: inset(0 100% 0 0);
+  animation: type 5s steps(28) infinite;
+  animation-delay: calc(var(--i) * 0.5s);
+}
+.tk-k { color: var(--accent-soft); }
+.tk-f { color: #c9b8ff; }
+.tk-n { color: var(--paper); }
+.tk-p { color: var(--grey); }
+.tk-t { color: #7fd8c4; }
+.tk-ok { color: #7fd8a0; }
 @keyframes type {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
+  0% { clip-path: inset(0 100% 0 0); }
+  12%, 88% { clip-path: inset(0 0 0 0); }
+  100% { clip-path: inset(0 0 0 0); opacity: 0; }
 }
-
-/* ── Inline illustrations draw themselves as they scroll into view ────── */
-.art-scroll {
-  view-timeline-name: --art;
+.demo-card {
+  background: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--demo-line);
 }
-.art-scroll svg {
-  display: block;
-  width: 100%;
-  height: auto;
+.demo-pointer {
+  animation: pointer 3.6s var(--ease) infinite;
 }
-@supports (animation-timeline: view()) {
-  .art-scroll :is(.a-s, .a-h, .a-y, .a-p, .a-g, .a-f) {
-    animation-timeline: --art;
-    animation-delay: 0s;
-    animation-duration: auto;
-    animation-fill-mode: both;
-    animation-range: cover calc(6% + var(--t) * 8%) cover calc(16% + var(--t) * 8%);
-  }
+@keyframes pointer {
+  0% { translate: 120% 160%; }
+  40%, 70% { translate: 30% 55%; }
+  48% { scale: 0.85; }
+  55% { scale: 1; }
+  100% { translate: 120% 160%; }
 }
-
-/* ── Toolkit ──────────────────────────────────────────────────────────── */
-.skill {
-  text-align: left;
-}
-html:not(.has-3d) .toolkit ul {
-  display: grid;
-  gap: 2rem 2.5rem;
-  padding-block: 10svh;
-  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-}
-html:not(.has-3d) .skill {
-  font-weight: 600;
-  border-top: 1px solid var(--line);
-  padding-top: 1rem;
-  width: 100%;
-}
-html:not(.has-3d) .skill-note {
-  display: block;
-  margin-top: 0.25rem;
-  font-weight: 400;
-  color: rgb(236 233 226 / 0.7);
-}
-html:not(.has-3d) .toolkit-note {
-  display: none;
-}
-.has-3d .toolkit {
+.demo-press {
   position: relative;
-  height: 92svh;
-  touch-action: pan-y;
-  cursor: grab;
   overflow: hidden;
+  animation: press 3.6s var(--ease) infinite;
 }
-.has-3d .toolkit li {
+.demo-press > span {
+  grid-area: 1 / 1;
+  transition: none;
+}
+.demo-press-b {
+  opacity: 0;
+  animation: swap-in 3.6s var(--ease) infinite;
+}
+.demo-press-a {
+  animation: swap-out 3.6s var(--ease) infinite;
+}
+@keyframes press {
+  46% { scale: 1; }
+  50% { scale: 0.94; background: var(--accent); }
+  56%, 92% { scale: 1; background: #1f9d63; }
+}
+@keyframes swap-in {
+  0%, 52% { opacity: 0; translate: 0 60%; }
+  58%, 92% { opacity: 1; translate: 0 0; }
+}
+@keyframes swap-out {
+  0%, 50% { opacity: 1; translate: 0 0; }
+  56%, 100% { opacity: 0; translate: 0 -60%; }
+}
+.demo-curve {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 2.4s var(--ease) infinite;
+}
+@keyframes draw {
+  60%, 100% { stroke-dashoffset: 0; }
+}
+.demo-ball {
+  animation: ball-x 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite, ball-y 2.4s linear infinite;
+}
+@keyframes ball-x {
+  60%, 100% { left: 100%; }
+}
+@keyframes ball-y {
+  0% { bottom: 0; }
+  60%, 100% { bottom: 100%; }
+}
+.demo-slide {
+  animation: slide 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+@keyframes slide {
+  60%, 100% { translate: 455% 0; }
+}
+.demo-3d {
+  perspective: 700px;
+}
+.demo-cube {
+  --s: clamp(70px, 9vw, 120px);
+  position: relative;
+  width: var(--s);
+  height: var(--s);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx, -22deg)) rotateY(var(--ry, 32deg));
+  transition: transform 0.6s var(--ease);
+  animation: spin 9s linear infinite;
+}
+.demo-3d:hover .demo-cube {
+  animation-play-state: paused;
+}
+@keyframes spin {
+  to { rotate: y 360deg; }
+}
+.face {
   position: absolute;
-  left: 0;
-  top: 0;
+  inset: 0;
+  box-shadow: inset 0 0 0 1.5px var(--paper);
+  background: rgb(61 91 255 / 0.08);
 }
-.has-3d .skill {
-  display: block;
-  white-space: nowrap;
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.04em;
-  padding: 0.55em 1em;
-  border-radius: 999px;
-  background: rgb(11 13 18 / 0.72);
-  box-shadow: inset 0 0 0 1px rgb(236 233 226 / 0.22);
-  transition:
-    background-color 0.25s,
-    color 0.25s;
+.face-f { transform: translateZ(calc(var(--s) / 2)); }
+.face-b { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.face-l { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.face-r { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.face-t { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); box-shadow: inset 0 0 0 1.5px var(--accent); }
+.face-d { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+.demo-q {
+  animation: pop 6s var(--ease) infinite;
 }
-.has-3d .skill:hover,
-.has-3d .skill[data-active] {
-  background: var(--cobalt);
-  color: #fff;
+.demo-a {
+  animation: pop 6s var(--ease) 0.6s infinite both;
+  max-width: 88%;
 }
-.has-3d .skill-note {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-}
-.has-3d .toolkit-note {
-  position: absolute;
-  left: var(--gutter);
-  bottom: 6svh;
-  max-width: 34ch;
-  min-height: 3em;
-  pointer-events: none;
-  color: var(--link);
-}
-
-/* ── Before / after ───────────────────────────────────────────────────── */
-.compare-before {
-  clip-path: inset(0 calc(100% - var(--pos) * 1%) 0 0);
-}
-.compare-line {
-  left: calc(var(--pos) * 1%);
-}
-.compare-knob {
-  transition:
-    scale 0.35s var(--ease-out),
-    background-color 0.3s;
-}
-.compare[data-dragging] .compare-knob,
-.compare-knob:hover {
-  scale: 1.15;
-  background: var(--caution);
-}
-
-/* ── Buttons ──────────────────────────────────────────────────────────── */
-.btn {
+.demo-dots {
   display: inline-flex;
-  align-items: center;
-  gap: 0.6em;
+  gap: 4px;
+  animation: hide-dots 6s steps(1) infinite;
+}
+.demo-dots > i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--grey);
+  animation: blink 0.9s ease-in-out infinite;
+}
+.demo-dots > i:nth-child(2) { animation-delay: 0.15s; }
+.demo-dots > i:nth-child(3) { animation-delay: 0.3s; }
+.demo-stream {
+  display: none;
+  animation: stream 6s steps(40) infinite;
+}
+@keyframes pop {
+  0% { opacity: 0; translate: 0 10px; }
+  8%, 90% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; }
+}
+@keyframes hide-dots {
+  0%, 28% { display: inline-flex; }
+  29%, 100% { display: none; }
+}
+@keyframes blink {
+  50% { opacity: 0.25; }
+}
+@keyframes stream {
+  0%, 28% { display: none; clip-path: inset(0 100% 0 0); }
+  29% { display: inline; clip-path: inset(0 100% 0 0); }
+  70%, 100% { display: inline; clip-path: inset(0 0 0 0); }
+}
+.demo-packet {
+  animation: packet 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+@keyframes packet {
+  from { left: 0; opacity: 0; }
+  10%, 90% { opacity: 1; }
+  to { left: 100%; opacity: 0; }
+}
+.demo-node {
+  animation: node 2.4s steps(1) infinite;
+  animation-delay: calc(var(--i) * 0.6s);
+}
+@keyframes node {
+  0%, 20% { box-shadow: inset 0 0 0 1px var(--accent); }
+  21%, 100% { box-shadow: inset 0 0 0 1px var(--demo-line); }
+}
+.demo-brand {
+  animation: brand 4s var(--ease) infinite alternate;
+}
+@keyframes brand {
+  0% { font-variation-settings: "wdth" 60; font-weight: 200; }
+  60%, 100% { font-variation-settings: "wdth" 150; font-weight: 900; }
+}
+
+/* ── Lab ──────────────────────────────────────────────────────────────── */
+.lab-tabs {
+  scrollbar-width: none;
+}
+.lab-tab[aria-selected="true"] {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+@media (min-width: 1024px) {
+  .lab-tab[aria-selected="true"] {
+    box-shadow: none;
+  }
+  .lab-tab {
+    border-top: 1px solid var(--line);
+    transition: padding var(--t-base) var(--ease);
+  }
+  .lab-tab[aria-selected="true"] {
+    padding-left: 0.75rem;
+    border-top-color: var(--accent);
+  }
+}
+.lab-loading,
+.ai-thinking {
+  background: linear-gradient(100deg, transparent 30%, rgb(237 237 234 / 0.06) 50%, transparent 70%) 0 0 / 220% 100%;
+  animation: shimmer 1.3s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -220% 0;
+  }
+}
+/* Scroll-driven experiment: the panel's own scroll position drives everything, in CSS. */
+@property --sl-n {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 100;
+}
+.sl {
+  scroll-timeline: --sl y;
+  scrollbar-width: thin;
+}
+.sl-count {
+  counter-reset: sl var(--sl-n);
+}
+.sl-count::after {
+  content: counter(sl) "%";
+}
+.sl-arc {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.sl-card {
+  background: rgb(61 91 255 / 0.05);
+  z-index: -1;
+  rotate: calc((var(--i) - 2) * 12deg);
+  translate: calc((var(--i) - 2) * 42%) 0;
+}
+@supports (animation-timeline: scroll()) {
+  .sl-count {
+    animation: sl-n linear both;
+    animation-timeline: --sl;
+  }
+  .sl-arc {
+    animation: sl-arc linear both;
+    animation-timeline: --sl;
+  }
+  .sl-card {
+    animation: sl-fan linear both;
+    animation-timeline: --sl;
+  }
+}
+@keyframes sl-n {
+  from { --sl-n: 0; }
+  to { --sl-n: 100; }
+}
+@keyframes sl-arc {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes sl-fan {
+  from {
+    rotate: 0deg;
+    translate: 0 0;
+  }
+}
+
+/* ── Technology ───────────────────────────────────────────────────────── */
+.tech-node {
+  padding: 0.6em 1.05em;
   border-radius: 999px;
-  padding: 0.95em 1.6em;
-  font-weight: 600;
-  line-height: 1;
-  white-space: nowrap;
+  font-size: 0.95rem;
+  box-shadow: inset 0 0 0 1px var(--line);
   transition:
-    background-color 0.3s,
-    color 0.3s;
+    box-shadow var(--t-quick) var(--ease),
+    color var(--t-quick) var(--ease),
+    background-color var(--t-quick) var(--ease);
 }
-.btn-primary {
-  background: var(--cobalt);
-  color: #fff;
+.tech-node:hover,
+.tech-node[data-on] {
+  box-shadow: inset 0 0 0 1px var(--accent);
+  background: rgb(61 91 255 / 0.12);
 }
-.btn-primary:hover {
-  background: #2f4cf0;
+.tech-packet {
+  position: absolute;
+  left: -2px;
+  width: 5px;
+  height: 5px;
+  background: var(--accent);
+  animation: packet-down 2.35s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
-.btn-ghost {
-  box-shadow: inset 0 0 0 1px rgb(236 233 226 / 0.28);
+@keyframes packet-down {
+  from { top: 0; opacity: 0; }
+  15%, 85% { opacity: 1; }
+  to { top: calc(100% - 5px); opacity: 0; }
 }
-.btn-ghost:hover {
-  box-shadow: inset 0 0 0 1px var(--paper);
+
+/* ── Process ──────────────────────────────────────────────────────────── */
+.process-step {
+  flex-shrink: 0;
+  padding-block: 1rem;
 }
-.link {
-  color: var(--link);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
+@supports not (animation-timeline: view()) {
+  .process-step {
+    width: auto;
+    margin-bottom: 4rem;
+  }
 }
-.link:hover {
+
+/* ── Diagnostics ──────────────────────────────────────────────────────── */
+.diag {
+  background: var(--ink-2);
+  align-self: start;
+}
+.diag-live {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #4ad295;
+  animation: blink 1.6s ease-in-out infinite;
+}
+.diag-num {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 2.3vw, 2.1rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
   color: var(--paper);
 }
-
-/* ── 3D vs. static ────────────────────────────────────────────────────
-   An inline script adds .has-3d before first paint when WebGL works and
-   reduced motion is off, so swapping in static fallbacks never shifts layout. */
-.has-3d .static-only {
-  display: none;
+.diag-grade {
+  text-transform: uppercase;
 }
-html:not(.has-3d) .with-3d {
-  display: none;
+.diag-cell[data-grade="good"] .diag-grade { color: #4ad295; }
+.diag-cell[data-grade="fair"] .diag-grade { color: #f2c14e; }
+.diag-cell[data-grade="poor"] .diag-grade { color: #ff8a7a; }
+
+/* ── Form ─────────────────────────────────────────────────────────────── */
+.field {
+  border-bottom: 1px solid rgb(237 237 234 / 0.3);
+  transition: border-color var(--t-quick) var(--ease);
+  font-size: 1.15rem;
+}
+.field:focus {
+  border-bottom-color: var(--accent-soft);
+}
+.field[aria-invalid="true"] {
+  border-bottom-color: #ff8a7a;
+}
+.field-wrap:focus-within > label {
+  color: var(--accent-soft) !important;
+}
+.chip {
+  padding: 0.55em 1em;
+  border-radius: 999px;
+  font-size: 0.92rem;
+  box-shadow: inset 0 0 0 1px rgb(237 237 234 / 0.25);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background-color var(--t-quick) var(--ease),
+    box-shadow var(--t-quick) var(--ease),
+    color var(--t-quick) var(--ease);
+}
+.chip:hover {
+  box-shadow: inset 0 0 0 1px var(--paper);
+}
+.chip[data-on] {
+  background: var(--accent);
+  box-shadow: none;
+  color: #fff;
+}
+.chip:has(input:focus-visible) {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 3px;
 }
 
-/* ── Cursor ───────────────────────────────────────────────────────────── */
+/* ── Custom cursor (fine pointers only, never with reduced motion) ───── */
 .cursor {
   display: none;
 }
@@ -552,49 +1001,55 @@ html:not(.has-3d) .with-3d {
   z-index: 90;
   display: grid;
   place-items: center;
-  width: 12px;
-  height: 12px;
-  margin: -6px 0 0 -6px;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
   border-radius: 999px;
   background: var(--paper);
   pointer-events: none;
   mix-blend-mode: difference;
   transition:
-    width 0.35s var(--ease-out),
-    height 0.35s var(--ease-out),
-    margin 0.35s var(--ease-out),
-    background-color 0.3s;
+    width var(--t-base) var(--ease),
+    height var(--t-base) var(--ease),
+    margin var(--t-base) var(--ease),
+    background-color var(--t-quick);
 }
 .cursor[data-mode="link"] {
-  width: 46px;
-  height: 46px;
-  margin: -23px 0 0 -23px;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
   background: transparent;
   box-shadow: inset 0 0 0 1.5px var(--paper);
 }
-.cursor[data-mode="open"],
-.cursor[data-mode="drag"] {
-  width: 88px;
-  height: 88px;
-  margin: -44px 0 0 -44px;
-  background: var(--cobalt);
+.cursor[data-mode="view"],
+.cursor[data-mode="drag"],
+.cursor[data-mode="play"] {
+  width: 86px;
+  height: 86px;
+  margin: -43px 0 0 -43px;
+  background: var(--accent);
   mix-blend-mode: normal;
+}
+.cursor[data-mode="text"] {
+  width: 3px;
+  height: 28px;
+  margin: -14px 0 0 -1.5px;
+  border-radius: 1px;
 }
 .cursor span {
   font-family: var(--font-mono);
   font-size: 0.6875rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: #fff;
 }
 
-/* ── Film grain ───────────────────────────────────────────────────────── */
+/* ── Film grain (fixed, never on a scrolling container) ───────────────── */
 .grain {
   position: fixed;
   inset: -8%;
-  z-index: 70;
+  z-index: 80;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.055;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   animation: grain 0.9s steps(5) infinite;
 }
@@ -604,6 +1059,18 @@ html:not(.has-3d) .with-3d {
   40% { transform: translate(3%, -5%); }
   60% { transform: translate(-6%, -2%); }
   80% { transform: translate(5%, 4%); }
+}
+
+/* ── Blueprint mode (type "weberv" anywhere) ──────────────────────────── */
+html[data-blueprint] * {
+  outline: 1px solid rgb(61 91 255 / 0.35) !important;
+  outline-offset: -1px;
+}
+html[data-blueprint] body {
+  background-image:
+    linear-gradient(rgb(61 91 255 / 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(61 91 255 / 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
 }
 
 /* ── Utilities ────────────────────────────────────────────────────────── */

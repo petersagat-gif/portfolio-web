@@ -12,7 +12,7 @@ const eslintConfig = defineConfig([
   {
     // React Three Fiber scenes mutate three.js objects every frame inside useFrame by design;
     // the React Compiler immutability rule doesn't model imperative scene graphs.
-    files: ["components/three/**"],
+    files: ["components/three/**", "components/lab/**"],
     rules: { "react-hooks/immutability": "off" },
   },
   // Override default ignores of eslint-config-next.

@@ -3,11 +3,14 @@
 import { useEffect, useRef } from "react";
 import { loadGsap } from "@/lib/gsap";
 
+const LABELS: Record<string, string> = { view: "View", drag: "Drag", play: "Play" };
+
 /**
- * A dot that trails the pointer and morphs: a ring over links, a labelled disc over
- * projects ("Open") and draggable things ("Drag"). Fine pointers only, never with reduced motion.
+ * A dot that trails the pointer and changes with context: a ring over links, a caret over text
+ * fields, a labelled disc over work ("View"), lab experiments ("Play") and draggables ("Drag").
+ * Set the state with data-cursor on any element. Fine pointers only, never with reduced motion.
  */
-export default function Cursor({ open, drag }: { open: string; drag: string }) {
+export default function Cursor() {
   const dot = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLSpanElement>(null);
 
@@ -16,34 +19,31 @@ export default function Cursor({ open, drag }: { open: string; drag: string }) {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const el = dot.current!;
     const root = document.documentElement;
-    const text: Record<string, string> = { open, drag };
-    // Follow the pointer directly until GSAP has loaded (first move), then with a soft lag.
+    let lastY = 0;
+    // Follow directly until GSAP has loaded (first move), then with a soft lag.
     let x: (v: number) => unknown = (v) => el.style.setProperty("translate", `${v}px ${lastY}px`);
     let y: (v: number) => unknown = (v) => (lastY = v);
-    let lastY = 0;
     let upgraded = false;
-    const upgrade = () =>
-      loadGsap().then(({ gsap }) => {
-        el.style.removeProperty("translate");
-        x = gsap.quickTo(el, "x", { duration: 0.35, ease: "power3" });
-        y = gsap.quickTo(el, "y", { duration: 0.35, ease: "power3" });
-      });
 
     const move = (e: PointerEvent) => {
       root.classList.add("has-cursor");
       if (!upgraded) {
         upgraded = true;
-        void upgrade();
+        void loadGsap().then(({ gsap }) => {
+          el.style.removeProperty("translate");
+          x = gsap.quickTo(el, "x", { duration: 0.32, ease: "power3" });
+          y = gsap.quickTo(el, "y", { duration: 0.32, ease: "power3" });
+        });
       }
       y(e.clientY);
       x(e.clientX);
       const t = e.target as Element;
-      const mode = root.hasAttribute("data-cursor-open") // set by the 3D gallery on hover
-        ? "open"
-        : (t.closest("[data-cursor]")?.getAttribute("data-cursor") ?? (t.closest("a, button") ? "link" : ""));
+      const mode =
+        t.closest("[data-cursor]")?.getAttribute("data-cursor") ??
+        (t.closest("input, textarea") ? "text" : t.closest("a, button, label, [role='tab']") ? "link" : "");
       if (mode !== el.dataset.mode) {
         el.dataset.mode = mode;
-        label.current!.textContent = text[mode] ?? "";
+        label.current!.textContent = LABELS[mode] ?? "";
       }
     };
     const leave = () => root.classList.remove("has-cursor");
@@ -54,7 +54,7 @@ export default function Cursor({ open, drag }: { open: string; drag: string }) {
       document.removeEventListener("pointerleave", leave);
       root.classList.remove("has-cursor");
     };
-  }, [open, drag]);
+  }, []);
 
   return (
     <div ref={dot} className="cursor" aria-hidden>

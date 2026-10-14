@@ -4,46 +4,108 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { loadGsap } from "@/lib/gsap";
 import { onFirstInteraction } from "@/lib/idle";
-import { tick } from "@/lib/sound";
 
 type Lenis = import("lenis").default;
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/** Site-wide chrome: inertial scrolling, film grain, UI sounds, magnetic buttons and the nav's build status. */
+/** Three bars on ink, widths 0..1: the favicon version of the WebERV mark. */
+function drawFavicon(widths: number[]) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const x = c.getContext("2d")!;
+  x.fillStyle = "#0b0b0c";
+  x.beginPath();
+  x.roundRect(0, 0, 64, 64, 14);
+  x.fill();
+  x.fillStyle = "#3d5bff";
+  widths.forEach((w, i) => x.fillRect(16, 17 + i * 12, Math.max(4, 32 * w), 7));
+  let link = document.querySelector<HTMLLinkElement>("link[rel='icon'][data-live]");
+  if (!link) {
+    link = Object.assign(document.createElement("link"), { rel: "icon", type: "image/png" });
+    link.dataset.live = "";
+    document.head.appendChild(link);
+  }
+  link.href = c.toDataURL("image/png");
+}
+
+/** Site-wide chrome: inertial scroll, magnetic buttons, grain, favicon, title and the blueprint easter egg. */
 export default function Chrome() {
   const lenis = useRef<Lenis | null>(null);
   const path = usePathname();
 
   useEffect(() => {
-    // Hover ticks (silent unless sound is switched on).
-    const over = (e: PointerEvent) => {
-      const hit = (e.target as Element).closest?.("a, button");
-      if (hit && hit !== (e.relatedTarget as Element | null)?.closest?.("a, button")) tick();
+    // Favicon: bars load in once, then breathe while the tab sits in the background.
+    let frame = 0;
+    const load = setInterval(() => {
+      frame++;
+      drawFavicon([0, 1, 2].map((i) => Math.min(1, Math.max(0, frame / 6 - i * 0.25))));
+      if (frame >= 9) clearInterval(load);
+    }, 90);
+    const title = document.title;
+    let idle = 0;
+    const onVisibility = () => {
+      clearInterval(idle);
+      if (document.hidden) {
+        document.title = "Still building. | WebERV";
+        let t = 0;
+        idle = window.setInterval(() => {
+          t++;
+          drawFavicon([0, 1, 2].map((i) => 0.45 + 0.55 * Math.abs(Math.sin(t * 0.9 + i))));
+        }, 700);
+      } else {
+        document.title = title;
+        drawFavicon([1, 1, 1]);
+      }
     };
-    document.addEventListener("pointerover", over, { passive: true });
-    if (reduced()) return () => document.removeEventListener("pointerover", over);
+    document.addEventListener("visibilitychange", onVisibility);
 
-    // Smooth scrolling is a nicety: start it on the first interaction.
+    // Easter egg: type "weberv" anywhere (outside form fields) to toggle blueprint mode.
+    let typed = "";
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.target as Element).closest("input, textarea, select, [contenteditable]")) return;
+      if (e.key.length !== 1) return;
+      typed = (typed + e.key.toLowerCase()).slice(-6);
+      if (typed !== "weberv") return;
+      typed = "";
+      const root = document.documentElement;
+      const on = root.toggleAttribute("data-blueprint");
+      const toast = Object.assign(document.createElement("div"), {
+        className: "meta fixed bottom-5 left-1/2 z-[95] -translate-x-1/2 rounded-full bg-accent px-4 py-2 !text-white",
+        textContent: on ? "Blueprint mode on. Type weberv again to leave." : "Blueprint mode off.",
+        role: "status",
+      });
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2600);
+    };
+    addEventListener("keydown", onKey);
+
+    // Smooth scrolling is a nicety: start it on the first interaction, off the load path.
     let alive = true;
     let stop = () => {};
-    const cancel = onFirstInteraction(async () => {
-      const [{ gsap, ScrollTrigger }, { default: Lenis }] = await Promise.all([loadGsap(), import("lenis")]);
-      if (!alive) return;
-      const l = new Lenis({ autoRaf: false, anchors: true, lerp: 0.11 });
-      lenis.current = l;
-      l.on("scroll", ScrollTrigger.update);
-      const raf = (time: number) => l.raf(time * 1000);
-      gsap.ticker.add(raf);
-      gsap.ticker.lagSmoothing(0);
-      stop = () => {
-        gsap.ticker.remove(raf);
-        l.destroy();
-        lenis.current = null;
-      };
-    });
+    const cancel = reduced()
+      ? () => {}
+      : onFirstInteraction(async () => {
+          const [{ gsap, ScrollTrigger }, { default: Lenis }] = await Promise.all([loadGsap(), import("lenis")]);
+          if (!alive) return;
+          const l = new Lenis({ autoRaf: false, anchors: { offset: -72 }, lerp: 0.1 });
+          lenis.current = l;
+          l.on("scroll", ScrollTrigger.update);
+          const raf = (time: number) => l.raf(time * 1000);
+          gsap.ticker.add(raf);
+          gsap.ticker.lagSmoothing(0);
+          stop = () => {
+            gsap.ticker.remove(raf);
+            l.destroy();
+            lenis.current = null;
+          };
+        });
+
     return () => {
       alive = false;
-      document.removeEventListener("pointerover", over);
+      clearInterval(load);
+      clearInterval(idle);
+      document.removeEventListener("visibilitychange", onVisibility);
+      removeEventListener("keydown", onKey);
       cancel();
       stop();
     };
@@ -53,36 +115,23 @@ export default function Chrome() {
     // New page: start at the top without smoothing.
     lenis.current?.scrollTo(0, { immediate: true });
 
-    // Build status in the nav: whichever section crosses the middle of the screen sets it.
-    const root = document.documentElement;
-    root.dataset.stage = path.includes("/work/") ? "live" : "wireframe";
-    const stageOf = (el: HTMLElement) =>
-      el.dataset.stageBlock ?? (el.id === "top" ? "wireframe" : el.tagName === "FOOTER" ? "ready" : "live");
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && (root.dataset.stage = stageOf(e.target as HTMLElement))),
-      { rootMargin: "-50% 0px -50% 0px" },
-    );
-    document
-      .querySelectorAll<HTMLElement>("[data-stage-block], main section:not(#process), footer")
-      .forEach((el) => io.observe(el));
-
     // Magnetic buttons: they lean towards the pointer, then spring back. GSAP loads on first hover.
     const fine = matchMedia("(hover: hover) and (pointer: fine)").matches && !reduced();
-    const mags = fine ? [...document.querySelectorAll<HTMLElement>("[data-magnetic], .btn-primary")] : [];
+    const mags = fine ? [...document.querySelectorAll<HTMLElement>("[data-magnetic], .btn")] : [];
     const offs = mags.map((el) => {
       const move = async (e: PointerEvent) => {
         const { gsap } = await loadGsap();
         const r = el.getBoundingClientRect();
         gsap.to(el, {
-          x: (e.clientX - r.left - r.width / 2) * 0.3,
-          y: (e.clientY - r.top - r.height / 2) * 0.4,
-          duration: 0.4,
+          x: (e.clientX - r.left - r.width / 2) * 0.28,
+          y: (e.clientY - r.top - r.height / 2) * 0.38,
+          duration: 0.45,
           ease: "power3.out",
         });
       };
       const leave = async () => {
         const { gsap } = await loadGsap();
-        gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: "elastic.out(1, 0.4)" });
+        gsap.to(el, { x: 0, y: 0, duration: 0.9, ease: "elastic.out(1, 0.45)" });
       };
       el.addEventListener("pointermove", move);
       el.addEventListener("pointerleave", leave);
@@ -91,11 +140,7 @@ export default function Chrome() {
         el.removeEventListener("pointerleave", leave);
       };
     });
-
-    return () => {
-      io.disconnect();
-      offs.forEach((off) => off());
-    };
+    return () => offs.forEach((off) => off());
   }, [path]);
 
   return <div className="grain" aria-hidden />;

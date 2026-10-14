@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "art": "node scripts/covers.mjs public && node scripts/stages.mjs public && node scripts/illustrations.mjs public"
+    "art": "node scripts/pages.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

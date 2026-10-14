@@ -1,111 +1,118 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Reveal from "@/components/Reveal";
 import { ViewTransition } from "react";
-import { dictionaries, hasLocale, localePath } from "@/content/i18n";
-import { projectName, projects } from "@/content/projects";
+import { Footer } from "@/components/home/sections";
+import Reveal from "@/components/Reveal";
+import { CTA, work } from "@/content/site";
 
-// Every case study is prerendered. Letting the navigation wait for it (instead of streaming a
-// param-free shell first) means the page commits in one go, so the shared-title view transition can form.
+// Every case study is prerendered; waiting for it (rather than streaming a shell first) lets the
+// shared title and preview morph from the home page in one commit.
 export const instant = false;
 
 export function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
+  return work.projects.map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug]">): Promise<Metadata> {
-  const { lang, slug } = await params;
-  const p = projects.find((x) => x.slug === slug);
-  if (!p || !hasLocale(lang)) return {};
-  const path = `/work/${slug}`;
+  const { slug } = await params;
+  const p = work.projects.find((x) => x.slug === slug);
+  if (!p) return {};
   return {
-    title: projectName(p, lang),
-    description: p.text[lang].line,
-    alternates: {
-      canonical: localePath(lang, path),
-      languages: { en: path, sk: localePath("sk", path), "x-default": path },
-    },
+    title: `${p.name}, ${p.industry}`,
+    description: `${p.challenge} ${p.solution}`,
+    alternates: { canonical: `/work/${slug}` },
   };
 }
 
 export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slug]">) {
-  const { lang, slug } = await params;
-  if (!hasLocale(lang)) notFound();
-  const i = projects.findIndex((p) => p.slug === slug);
+  const { slug } = await params;
+  const i = work.projects.findIndex((x) => x.slug === slug);
   if (i < 0) notFound();
-
-  const p = projects[i];
-  const next = projects[(i + 1) % projects.length];
-  const t = dictionaries[lang].work;
-  const c = p.text[lang];
+  const p = work.projects[i];
+  const next = work.projects[(i + 1) % work.projects.length];
 
   return (
-    <main id="main" className="relative z-10 pb-[12svh]" style={{ "--accent": p.accent } as React.CSSProperties}>
-      <header className="wrap pt-28 md:pt-36">
-        <Link href={`${localePath(lang)}#work`} className="label hover:text-paper">
-          <span aria-hidden>←</span> {t.back}
-        </Link>
-        <ViewTransition name={`title-${p.slug}`} share="morph" default="none">
-          <h1 className="display mt-8 text-[clamp(3rem,11vw,11rem)]">{projectName(p, lang)}</h1>
-        </ViewTransition>
-        <div className="cols mt-8 gap-y-8">
-          <p className="lead col-span-4 max-w-[38ch] md:col-span-6">{c.line}</p>
-          <dl className="col-span-4 grid grid-cols-3 gap-4 md:col-span-5 md:col-start-8">
+    <>
+      <main id="main" className="relative z-10" style={{ "--accent-p": p.accent } as React.CSSProperties}>
+        <header className="wrap pt-28 md:pt-36">
+          <Link href="/#work" className="meta u-link">
+            ← All work
+          </Link>
+          <p className="meta mt-10">
+            {String(i + 1).padStart(2, "0")} / {String(work.projects.length).padStart(2, "0")}
+            {p.sample ? <span className="ml-3 text-accent-soft">Sample project</span> : null}
+          </p>
+          <ViewTransition name={`title-${p.slug}`} share="morph" default="none">
+            <h1 className="mark mt-4 text-[clamp(3.2rem,11vw,11rem)]">{p.name}</h1>
+          </ViewTransition>
+          <p className="lead muted mt-5 max-w-[36ch]">{p.industry}</p>
+        </header>
+
+        <figure className="wrap mt-14">
+          <ViewTransition name={`shot-${p.slug}`} share="morph" default="none">
+            <div className="browser relative">
+              <div className="flex h-9 items-center gap-1.5 border-b border-line px-4" aria-hidden>
+                {[0, 1, 2].map((k) => (
+                  <span key={k} className="size-2.5 rounded-full bg-paper/20" />
+                ))}
+                <span className="meta ml-4">{p.name.toLowerCase().replace(/\s/g, "")}.com</span>
+              </div>
+              {/* A real scrolling mockup: scroll inside the frame. */}
+              <div className="max-h-[78vh] overflow-y-auto overscroll-contain" tabIndex={0} aria-label={`${p.name} page preview, scrollable`}>
+                <img src={p.page} alt={`${p.name}: full page design`} className="w-full" />
+              </div>
+              <span className="absolute bottom-0 left-0 h-[3px] w-full" style={{ background: p.accent }} />
+            </div>
+          </ViewTransition>
+          <figcaption className="meta mt-3">Scroll inside the frame to see the whole page.</figcaption>
+        </figure>
+
+        <section className="wrap grid gap-14 py-[16vh] md:grid-cols-2" aria-label="Case study">
+          <div>
+            <h2 className="meta">Challenge</h2>
+            <p className="h3 mt-4">{p.challenge}</p>
+          </div>
+          <div>
+            <h2 className="meta">Solution</h2>
+            <p className="h3 mt-4">{p.solution}</p>
+          </div>
+          <dl className="grid gap-8 sm:grid-cols-3 md:col-span-2">
             {[
-              [t.year, p.year],
-              [t.role, p.role],
-              [t.stack, p.stack],
+              ["Services", p.services.join(", ")],
+              ["Technology", p.tech.join(", ")],
+              ["Result", p.result],
             ].map(([k, v]) => (
-              <div key={k} className="border-t border-line pt-3">
-                <dt className="label">{k}</dt>
-                <dd className="mt-1 text-sm">{v}</dd>
+              <div key={k} className="border-t border-line pt-4">
+                <dt className="meta">{k}</dt>
+                <dd className="mt-2">{v}</dd>
               </div>
             ))}
           </dl>
-        </div>
-      </header>
+          <div className="flex flex-wrap gap-3 md:col-span-2">
+            {p.url ? (
+              <a href={p.url} target="_blank" rel="noopener" className="btn btn-ghost">
+                Visit the live site <span className="arrow">↗</span>
+              </a>
+            ) : null}
+            <Link href="/#contact" className="btn btn-primary">
+              {CTA} <span className="arrow">→</span>
+            </Link>
+          </div>
+        </section>
 
-      <figure className="wrap mt-12 md:mt-16">
-        <div className="overflow-hidden rounded-2xl bg-panel shadow-[0_60px_160px_-60px_var(--accent)]">
-          {p.media.type === "video" ? (
-            <video src={p.media.src} poster={p.media.poster} autoPlay muted loop playsInline className="w-full" />
-          ) : (
-            <img src={p.media.src} alt={projectName(p, lang)} className="aspect-[16/10] w-full object-cover object-top" />
-          )}
-        </div>
-      </figure>
-
-      <div className="wrap cols mt-[12svh] gap-y-14">
-        {[
-          [t.problem, c.problem],
-          [t.did, c.did],
-          [t.result, c.result],
-        ].map(([k, v], n) => (
-          <section key={k} className={`col-span-4 md:col-span-6 ${n % 2 ? "md:col-start-7" : ""}`}>
-            <h2 className="label">{k}</h2>
-            <p className="lead mt-4 max-w-[40ch]">{v}</p>
-          </section>
-        ))}
-      </div>
-
-      {p.url ? (
-        <div className="wrap mt-[10svh] flex flex-wrap gap-3">
-          <a href={p.url} target="_blank" rel="noopener" className="btn btn-primary">
-            {t.visit} <span aria-hidden>↗</span>
-          </a>
-        </div>
-      ) : null}
-
-      <nav aria-label={t.next} className="wrap mt-[14svh] border-t border-line pt-8">
-        <p className="label">{t.next}</p>
-        <Link href={localePath(lang, `/work/${next.slug}`)} className="group mt-4 block" data-cursor="open">
-          <span className="display block text-[clamp(2.4rem,8vw,8rem)] transition-colors group-hover:text-link">
-            {projectName(next, lang)} <span aria-hidden>→</span>
-          </span>
-        </Link>
-      </nav>
-      <Reveal />
-    </main>
+        <nav aria-label="Next project" className="wrap border-t border-line py-[10vh]">
+          <p className="meta">Next project</p>
+          <Link href={`/work/${next.slug}`} data-cursor="view" className="group mt-4 block">
+            <span className="mark block text-[clamp(2.6rem,9vw,8.5rem)] transition-colors duration-500 group-hover:text-accent">
+              {next.name} <span className="arrow">→</span>
+            </span>
+            <span className="lead muted mt-3 block">{next.industry}</span>
+          </Link>
+        </nav>
+        <Reveal />
+      </main>
+      <Footer />
+    </>
   );
 }

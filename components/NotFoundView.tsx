@@ -1,26 +1,27 @@
-import Link from "next/link";
+"use client";
 
-// Shared 404 content: bilingual, because a missing page can't tell which language you came from.
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { CTA } from "@/content/site";
+
+const Physics = dynamic(() => import("./lab/Physics"), { ssr: false });
+
+/** The 404 is a toy: the missing page's number falls in, and you can throw it around. */
 export default function NotFoundView() {
   return (
-    <main id="main" className="wrap relative z-10 grid min-h-svh place-items-center py-24 text-center">
-      <div>
-        <img src="/art/404.svg" alt="" className="mx-auto w-[min(88vw,560px)]" />
-        <h1 className="display mt-4 text-[clamp(3.5rem,12vw,9rem)]">
-          404<span className="text-cobalt">.</span>
-        </h1>
-        <p className="lead mx-auto mt-5 max-w-[34ch]">
-          This page came apart before it was built.
-          <span lang="sk" className="mt-1 block text-paper/60">
-            Táto stránka sa rozpadla skôr, než vznikla.
-          </span>
-        </p>
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
+    <main id="main" className="relative z-10 min-h-[100dvh]">
+      <div className="absolute inset-0" data-cursor="drag">
+        <Physics word="404" />
+      </div>
+      <div className="wrap pointer-events-none relative flex min-h-[100dvh] flex-col justify-end pb-12 pt-32">
+        <h1 className="h2 max-w-[14ch]">This page doesn&apos;t exist. Yet.</h1>
+        <p className="lead muted mt-5 max-w-[34ch]">The link is broken or the page moved. The numbers above are real physics: grab one and throw it.</p>
+        <div className="pointer-events-auto mt-9 flex flex-wrap gap-3">
           <Link href="/" className="btn btn-primary">
-            Back to the homepage <span aria-hidden>→</span>
+            Back to the homepage <span className="arrow">→</span>
           </Link>
-          <Link href="/sk" lang="sk" className="btn btn-ghost">
-            Späť na úvod
+          <Link href="/#contact" className="btn btn-ghost">
+            {CTA}
           </Link>
         </div>
       </div>

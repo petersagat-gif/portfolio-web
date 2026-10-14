@@ -1,100 +1,74 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import GL from "@/components/GL";
 import Reveal from "@/components/Reveal";
-import { contact, dictionaries, hasLocale, localePath, siteUrl } from "@/content/i18n";
-import { projects } from "@/content/projects";
-import Stage3D from "@/components/Stage3D";
-import { Marquee } from "@/components/Art";
-import { About, Compare, Contact, Footer, Hero, Pricing, Process, Stepra, Toolkit, Work } from "@/components/sections";
+import Capabilities from "@/components/home/Capabilities";
+import Technology from "@/components/home/Technology";
+import {
+  About,
+  Footer,
+  Hero,
+  Performance,
+  Process,
+  StartProject,
+  Statement,
+  Testimonial,
+  Why,
+  Work,
+} from "@/components/home/sections";
+import Lab from "@/components/lab/Lab";
+import { EMAIL, about, capabilities, footer, meta, siteUrl } from "@/content/site";
 
-export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
-  const { lang } = await params;
-  return {
-    alternates: {
-      canonical: lang === "sk" ? "/sk" : "/",
-      languages: { en: "/", sk: "/sk", "x-default": "/" },
-    },
-  };
-}
-
-export default async function Home({ params }: PageProps<"/[lang]">) {
-  const { lang } = await params;
-  if (!hasLocale(lang)) notFound();
-  const t = dictionaries[lang];
-
-  // Person + Organization structured data. TODO: add sameAs links and the real domain.
+export default function Home() {
+  // Organization + services + website, for search engines and AI answer engines.
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "Person",
-        "@id": `${siteUrl}/#person`,
-        name: "Peter Šagát",
-        url: siteUrl,
-        jobTitle: lang === "sk" ? "Webdizajnér a vývojár" : "Web designer & developer",
-        address: { "@type": "PostalAddress", addressCountry: "SK" },
-        worksFor: { "@id": `${siteUrl}/#weberv` },
-        knowsAbout: t.toolkit.skills.map(([name]) => name),
-        sameAs: contact.links.map((l) => l.href).filter((h) => !h.includes("TODO")),
-      },
-      {
-        "@type": "Organization",
+        "@type": "ProfessionalService",
         "@id": `${siteUrl}/#weberv`,
-        name: "Weberv",
+        name: "WebERV",
         url: siteUrl,
-        founder: { "@id": `${siteUrl}/#person` },
-        areaServed: ["SK", "EU"],
+        email: EMAIL,
+        description: meta.description,
+        slogan: "Digital experiences built to be remembered.",
+        logo: `${siteUrl}/icon.svg`,
+        image: `${siteUrl}/og.png`,
+        areaServed: "Worldwide",
+        knowsAbout: meta.keywords,
+        founder: about.team.map((m) => ({ "@type": "Person", name: m.name })),
+        sameAs: footer.socials.map((s) => s.href).filter((h) => !h.includes("TODO")),
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: "Services",
+          itemListElement: capabilities.map((c) => ({
+            "@type": "Offer",
+            itemOffered: { "@type": "Service", name: c.name, description: c.body },
+          })),
+        },
       },
-      {
-        "@type": "Organization",
-        name: "Stepra",
-        founder: { "@id": `${siteUrl}/#person` },
-        parentOrganization: { "@type": "Organization", name: "SK PROFESSIONAL s.r.o." },
-      },
+      { "@type": "WebSite", "@id": `${siteUrl}/#site`, url: siteUrl, name: "WebERV", publisher: { "@id": `${siteUrl}/#weberv` } },
     ],
   };
 
   return (
     <>
       <main id="main">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
-        />
-        {/* Hero → process → work share one sticky 3D stage. */}
-        <div className="relative">
-          <div data-world className="pointer-events-none sticky top-0 -mb-[100svh] h-svh" aria-hidden />
-          <Hero t={t} />
-          <Process t={t} />
-          <Work lang={lang} t={t} />
-        </div>
-        <Marquee variant="ticker" items={t.marquee.services} />
-        <Compare t={t} />
-        <Toolkit t={t} />
-        <Stepra t={t} />
-        <About t={t} />
-        <Pricing t={t} />
-        <Marquee variant="band" items={[t.contact.cta, t.contact.cta, t.contact.cta]} />
-        <Contact t={t} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
+        <Hero />
+        <Statement />
+        <Capabilities />
+        <Work />
+        <Lab />
+        <Technology />
+        <Process />
+        <Why />
+        <Performance />
+        <About />
+        <Testimonial />
+        <StartProject />
         <Reveal />
       </main>
-      <Stage3D
-        screens={projects.map((p) => ({
-          href: localePath(lang, `/work/${p.slug}`),
-          src: p.media.src,
-          video: p.media.type === "video",
-          accent: p.accent,
-        }))}
-        copy={{
-          first: t.hero.first,
-          last: t.hero.last,
-          pitch: t.hero.pitch,
-          role: t.hero.role,
-          cta: t.contact.cta,
-          nav: t.nav.cta,
-        }}
-      />
-      <Footer t={t} />
+      <Footer />
+      <GL />
     </>
   );
 }
