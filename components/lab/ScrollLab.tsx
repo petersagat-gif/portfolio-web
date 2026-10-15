@@ -10,7 +10,7 @@ export default function ScrollLab() {
           </svg>
           <p className="sl-count mark absolute text-[clamp(2.2rem,6vw,4.5rem)]" aria-hidden />
           {[0, 1, 2, 3, 4].map((i) => (
-            <span key={i} className="sl-card absolute h-[38%] w-[28%] ring-1 ring-line" style={{ "--i": i } as React.CSSProperties} />
+            <span key={i} className="sl-card absolute h-[78%] w-[62%] ring-1 ring-paper/15" style={{ "--i": i } as React.CSSProperties} />
           ))}
         </div>
         <p className="meta absolute bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap">Scroll inside this panel</p>

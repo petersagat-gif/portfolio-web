@@ -7,7 +7,8 @@ import { CTA, EMAIL, footer, nav, work } from "@/content/site";
 /** The WebERV mark: WEB≡RV. The bars are the "E" of ERV. */
 export function Mark({ className = "" }: { className?: string }) {
   return (
-    <span className={`mark ${className}`} aria-label="WebERV">
+    <span className={`mark ${className}`}>
+      <span className="sr-only">WebERV</span>
       <span aria-hidden className="mark-letters">WEB</span>
       <span aria-hidden className="bars">
         <i />

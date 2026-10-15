@@ -15,9 +15,14 @@ import {
   Work,
 } from "@/components/home/sections";
 import Lab from "@/components/lab/Lab";
-import { EMAIL, about, capabilities, footer, meta, siteUrl } from "@/content/site";
+import { notFound } from "next/navigation";
+import { EMAIL, about, capabilities, footer, hasLocale, meta, siteUrl } from "@/content/site";
 
-export default function Home() {
+export default async function Home({ params }: PageProps<"/[lang]">) {
+  // Unknown first segments (e.g. /some-typo) land here via the [lang] route: show the 404.
+  const { lang } = await params;
+  if (!hasLocale(lang)) notFound();
+
   // Organization + services + website, for search engines and AI answer engines.
   const jsonLd = {
     "@context": "https://schema.org",

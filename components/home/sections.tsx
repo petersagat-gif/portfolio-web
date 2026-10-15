@@ -47,7 +47,7 @@ export function Statement() {
         <p className="kinetic h3 max-w-[22ch] !font-[720] md:text-[clamp(2.4rem,4.6vw,4.9rem)]">
           {words.map(({ w, li }, i) => (
             <span key={i}>
-              <span className={`w ${li === 0 ? "text-accent-soft" : ""}`} style={{ "--p": i / (words.length - 1) } as React.CSSProperties}>
+              <span className={`w ${li === 0 ? "font-[820]" : ""}`} style={{ "--p": i / (words.length - 1) } as React.CSSProperties}>
                 {w}
               </span>{" "}
               {li === 0 && words[i + 1]?.li === 1 ? <br /> : null}

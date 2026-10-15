@@ -23,6 +23,7 @@ export default function Reveal() {
           if (el.getBoundingClientRect().top < innerHeight) return; // already on screen: leave it be
           SplitText.create(el, {
             type: "lines",
+            aria: "none", // line wrappers keep the text readable as-is; no aria-label on <p>/<h2>
             mask: "lines",
             autoSplit: true,
             onSplit: (self) =>

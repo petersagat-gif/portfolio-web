@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Suspense } from "react";
 import { CTA } from "@/content/site";
 
 const Physics = dynamic(() => import("./lab/Physics"), { ssr: false });
@@ -11,7 +12,9 @@ export default function NotFoundView() {
   return (
     <main id="main" className="relative z-10 min-h-[100dvh]">
       <div className="absolute inset-0" data-cursor="drag">
-        <Physics word="404" />
+        <Suspense fallback={null}>
+          <Physics word="404" />
+        </Suspense>
       </div>
       <div className="wrap pointer-events-none relative flex min-h-[100dvh] flex-col justify-end pb-12 pt-32">
         <h1 className="h2 max-w-[14ch]">This page doesn&apos;t exist. Yet.</h1>

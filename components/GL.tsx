@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { onFirstInteraction } from "@/lib/idle";
 
 const Scene = dynamic(() => import("./three/Scene"), { ssr: false });
@@ -27,5 +27,5 @@ export default function GL() {
       else root.classList.remove("has-3d");
     }, 1200);
   }, []);
-  return on ? <Scene /> : null;
+  return <Suspense fallback={null}>{on ? <Scene /> : null}</Suspense>;
 }

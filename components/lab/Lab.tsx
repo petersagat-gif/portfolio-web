@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { lab, type ExperimentId } from "@/content/site";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -65,7 +65,7 @@ export default function Lab() {
               data-cursor={active === "ai" || active === "scroll" ? undefined : active === "physics" || active === "object" ? "drag" : "play"}
               className="lab-stage relative aspect-[4/5] overflow-hidden bg-ink-2 ring-1 ring-line sm:aspect-[16/11]"
             >
-              {near ? <Active key={active} /> : <Loading />}
+              <Suspense fallback={<Loading />}>{near ? <Active key={active} /> : <Loading />}</Suspense>
             </div>
             <p className="meta mt-4">
               <span className="text-paper">{current.name}.</span> {current.hint}

@@ -13,15 +13,20 @@ const interactions = ["pointermove", "pointerdown", "wheel", "touchstart", "keyd
 /**
  * Run `fn` once, on the visitor's first interaction, or `fallbackMs` after the page has loaded and
  * gone idle, whichever comes first. Keeps scroll/animation libraries and the 3D off the load path.
+ * Touch devices get no timer: on a phone, the heavy work waits for the first touch or scroll, so
+ * visitors who leave without interacting never pay for it.
  */
 export function onFirstInteraction(fn: () => void, fallbackMs = 2500) {
+  const timed = matchMedia("(pointer: fine)").matches;
   let timer = 0;
   let cancelIdle = () => {};
   const run = () => {
     cancel();
     fn();
   };
-  const afterLoad = () => (cancelIdle = whenIdle(() => (timer = window.setTimeout(run, fallbackMs))));
+  const afterLoad = () => {
+    if (timed) cancelIdle = whenIdle(() => (timer = window.setTimeout(run, fallbackMs)));
+  };
   const cancel = () => {
     interactions.forEach((e) => removeEventListener(e, run));
     removeEventListener("load", afterLoad);

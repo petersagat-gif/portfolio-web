@@ -53,7 +53,8 @@ export default function HeroMark() {
   }, []);
 
   return (
-    <p ref={ref} className="mark intro-mark hero-mark" aria-label="WebERV">
+    <p ref={ref} className="mark intro-mark hero-mark">
+      <span className="sr-only">WebERV</span>
       {LETTERS.map((l, i) =>
         l ? (
           <span key={i} data-part aria-hidden style={{ "--i": i } as React.CSSProperties} className="hero-letter">

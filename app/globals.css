@@ -346,7 +346,7 @@ a:hover > .arrow {
 @media (prefers-reduced-motion: no-preference) {
   .intro-mark > span {
     display: inline-block;
-    animation: rise var(--t-slow) var(--ease) both;
+    animation: rise-only var(--t-slow) var(--ease) both;
     animation-delay: calc(var(--i) * 45ms);
   }
   .intro-mark .bars > i {
@@ -354,7 +354,7 @@ a:hover > .arrow {
     animation-delay: calc(0.1s + var(--i) * 80ms);
   }
   .intro-2 {
-    animation: rise var(--t-slow) var(--ease) 0.35s both;
+    animation: rise-only var(--t-slow) var(--ease) 0.35s both;
   }
   .intro-4 {
     animation: fade 0.6s var(--ease) 0.75s both;
@@ -375,6 +375,12 @@ a:hover > .arrow {
 @keyframes fade {
   from {
     opacity: 0;
+  }
+}
+/* Hero text only moves: it stays visible from the first frame, so it counts as the page's main content. */
+@keyframes rise-only {
+  from {
+    translate: 0 0.35em;
   }
 }
 @keyframes bar-in {
@@ -399,7 +405,7 @@ html[data-gl-ready] .gl-slot {
 
 /* ── Statement: words light up as the paragraph scrolls through ───────── */
 .kinetic .w {
-  opacity: 0.16;
+  opacity: 0.42; /* dim but still 3:1 for large text before the scroll lights it */
 }
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
@@ -841,7 +847,7 @@ a:focus-visible .browser-page {
   stroke-dashoffset: 0;
 }
 .sl-card {
-  background: rgb(61 91 255 / 0.05);
+  background: transparent;
   z-index: -1;
   rotate: calc((var(--i) - 2) * 12deg);
   translate: calc((var(--i) - 2) * 42%) 0;
