@@ -7,15 +7,16 @@ export type Pointer = { x: number; y: number; down: boolean; inside: boolean; vx
 
 /**
  * A 2D canvas sized to its box (DPR-aware), with a pointer state and a render loop that only
- * runs while the canvas is on screen. `setup` returns the per-frame draw function.
+ * runs while the canvas is on screen. `setup` returns the per-frame draw function; returning
+ * `false` from it means the picture is finished and the loop goes idle.
  */
-export function useCanvas(setup: (ctx: CanvasRenderingContext2D, w: number, h: number, p: Pointer) => (f: Frame) => void) {
+export function useCanvas(setup: (ctx: CanvasRenderingContext2D, w: number, h: number, p: Pointer) => (f: Frame) => void | false) {
   const ref = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
     const c = ref.current!;
     const ctx = c.getContext("2d")!;
     const p: Pointer = { x: -1e4, y: -1e4, down: false, inside: false, vx: 0, vy: 0 };
-    let draw: (f: Frame) => void = () => {};
+    let draw: (f: Frame) => void | false = () => {};
     let w = 0, h = 0, raf = 0, last = performance.now(), visible = false;
 
     const resize = () => {
@@ -27,12 +28,13 @@ export function useCanvas(setup: (ctx: CanvasRenderingContext2D, w: number, h: n
       c.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       draw = setup(ctx, w, h, p);
+      if (visible && !raf) raf = requestAnimationFrame(loop);
     };
     const loop = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
-      draw({ ctx, w, h, t: now / 1000, dt });
-      raf = visible ? requestAnimationFrame(loop) : 0;
+      const more = draw({ ctx, w, h, t: now / 1000, dt }) !== false;
+      raf = visible && more ? requestAnimationFrame(loop) : 0;
     };
     const ro = new ResizeObserver(resize);
     ro.observe(c);

@@ -23,6 +23,7 @@ export function Mark({ className = "" }: { className?: string }) {
 export default function Nav() {
   const dialog = useRef<HTMLDialogElement>(null);
   const toggle = useRef<HTMLButtonElement>(null);
+  const jump = useRef<string | null>(null);
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -41,7 +42,13 @@ export default function Nav() {
     const onClose = () => {
       setOpen(false);
       document.documentElement.style.overflow = "";
-      toggle.current?.focus();
+      // Followed an in-page link: focus lands on the section, not back on Menu.
+      // preventScroll so focus doesn't fight the (Lenis or native) anchor scroll.
+      const target = jump.current ? document.getElementById(jump.current) : null;
+      jump.current = null;
+      if (!target) return toggle.current?.focus();
+      if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+      target.focus({ preventScroll: true });
     };
     d.addEventListener("close", onClose);
     return () => d.removeEventListener("close", onClose);
@@ -95,7 +102,7 @@ export default function Nav() {
         <div className="wrap flex min-h-[100dvh] flex-col py-5">
           <div className="flex h-[52px] items-center justify-between">
             <Mark className="text-[1.35rem]" />
-            <button type="button" onClick={close} className="u-link text-[0.95rem]" autoFocus>
+            <button type="button" onClick={close} className="u-link -mx-2 px-2 py-3 text-[0.95rem]" autoFocus>
               Close
             </button>
           </div>
@@ -105,7 +112,10 @@ export default function Nav() {
                 <li key={n.href} style={{ "--i": i } as React.CSSProperties}>
                   <a
                     href={n.href}
-                    onClick={close}
+                    onClick={() => {
+                      jump.current = n.href.split("#")[1] ?? null;
+                      close();
+                    }}
                     onPointerEnter={() => setPreview(n.label)}
                     onFocus={() => setPreview(n.label)}
                     className="group flex items-baseline gap-5"
@@ -137,7 +147,14 @@ export default function Nav() {
             </div>
           </div>
           <div className="flex flex-wrap items-end justify-between gap-6 border-t border-line pt-6">
-            <Link href="/#contact" onClick={close} className="btn btn-primary">
+            <Link
+              href="/#contact"
+              onClick={() => {
+                jump.current = "contact";
+                close();
+              }}
+              className="btn btn-primary"
+            >
               {CTA} <span className="arrow">→</span>
             </Link>
             <a href={`mailto:${EMAIL}`} className="u-link">
@@ -146,7 +163,7 @@ export default function Nav() {
             <ul className="flex flex-wrap gap-5">
               {footer.socials.map((s) => (
                 <li key={s.label}>
-                  <a href={s.href} target="_blank" rel="noopener" className="u-link meta !text-paper">
+                  <a href={s.href} target="_blank" rel="noopener" className="u-link meta inline-block py-2 !text-paper">
                     {s.label}
                   </a>
                 </li>

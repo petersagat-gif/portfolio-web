@@ -46,10 +46,10 @@ Briefs are sent with [Resend](https://resend.com) when these environment variabl
 |---|---|
 | `RESEND_API_KEY` | Resend API key |
 | `CONTACT_TO` | Inbox that receives briefs (defaults to `hello@weberv.com`) |
-| `CONTACT_FROM` | Verified sender, e.g. `WebERV <briefs@weberv.com>` |
+| `CONTACT_FROM` | Required. Sender on a domain verified in Resend, e.g. `WebERV <briefs@weberv.com>` |
 | `NEXT_PUBLIC_SITE_URL` | The live domain, used for canonical URLs, sitemap and structured data |
 
-Without `RESEND_API_KEY` the form still works: it offers to open the visitor's mail app with the brief filled in. The API validates every field, caps lengths and drops bot submissions with a honeypot.
+Without `RESEND_API_KEY` and `CONTACT_FROM` the form still works: it offers to open the visitor's mail app with the brief filled in. The API validates every field, caps lengths and drops bot submissions with a honeypot, rejects cross-site posts and limits each IP to 5 briefs per 10 minutes.
 
 ## Performance notes
 

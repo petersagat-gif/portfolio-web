@@ -21,7 +21,8 @@ function setup(ctx: CanvasRenderingContext2D, w: number, h: number, p: Pointer) 
   const homes: number[] = [];
   for (let y = 0; y < ih; y += gap) for (let x = 0; x < iw; x += gap) if (data[(y * iw + x) * 4 + 3] > 128) homes.push(x, y);
   const n = homes.length / 2;
-  const pos = Float32Array.from(homes, (v, i) => (i % 2 ? v + (Math.random() - 0.5) * h : v + (Math.random() - 0.5) * w));
+  const scatter = matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1;
+  const pos = Float32Array.from(homes, (v, i) => v + (Math.random() - 0.5) * (i % 2 ? h : w) * scatter);
   const vel = new Float32Array(n * 2);
   let wasDown = false;
 

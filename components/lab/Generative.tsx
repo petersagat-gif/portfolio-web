@@ -28,7 +28,7 @@ export default function Generative() {
       ctx.lineWidth = 0.9;
       let frames = 0;
       return () => {
-        if (frames++ > 260) return; // the piece is finished: stop drawing
+        if (frames++ > 260) return false; // the piece is finished: stop drawing
         for (const k of walkers) {
           if (k.life-- <= 0) continue;
           const a = field(k.x, k.y) + (p.inside ? Math.atan2(p.y - k.y, p.x - k.x) * 0.15 : 0);

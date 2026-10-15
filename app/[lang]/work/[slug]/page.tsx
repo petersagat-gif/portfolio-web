@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ViewTransition } from "react";
 import { Footer } from "@/components/home/sections";
 import Reveal from "@/components/Reveal";
-import { CTA, work } from "@/content/site";
+import { CTA, hasLocale, work } from "@/content/site";
 
 // Every case study is prerendered; waiting for it (rather than streaming a shell first) lets the
 // shared title and preview morph from the home page in one commit.
@@ -20,13 +20,16 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/work/[slug
   if (!p) return {};
   return {
     title: `${p.name}, ${p.industry}`,
-    description: `${p.challenge} ${p.solution}`,
+    description: p.challenge,
     alternates: { canonical: `/work/${slug}` },
+    openGraph: { type: "article", url: `/work/${slug}`, images: [{ url: "/og.png", width: 1200, height: 630, alt: p.name }] },
+    ...(p.sample && { robots: { index: false, follow: true } }), // sample work stays out of search
   };
 }
 
 export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slug]">) {
-  const { slug } = await params;
+  const { lang, slug } = await params;
+  if (!hasLocale(lang)) notFound();
   const i = work.projects.findIndex((x) => x.slug === slug);
   if (i < 0) notFound();
   const p = work.projects[i];
@@ -60,7 +63,7 @@ export default async function CaseStudy({ params }: PageProps<"/[lang]/work/[slu
               </div>
               {/* A real scrolling mockup: scroll inside the frame. */}
               <div className="max-h-[78vh] overflow-y-auto overscroll-contain" tabIndex={0} aria-label={`${p.name} page preview, scrollable`}>
-                <img src={p.page} alt={`${p.name}: full page design`} className="w-full" />
+                <img src={p.page} alt={`${p.name}: full page design`} width={1440} height={3600} fetchPriority="high" className="w-full" />
               </div>
               <span className="absolute bottom-0 left-0 h-[3px] w-full" style={{ background: p.accent }} />
             </div>

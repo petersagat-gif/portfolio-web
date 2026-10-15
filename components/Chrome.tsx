@@ -87,7 +87,20 @@ export default function Chrome() {
       : onFirstInteraction(async () => {
           const [{ gsap, ScrollTrigger }, { default: Lenis }] = await Promise.all([loadGsap(), import("lenis")]);
           if (!alive) return;
-          const l = new Lenis({ autoRaf: false, anchors: { offset: -72 }, lerp: 0.1 });
+          // Sections above an anchor may still be unrendered (content-visibility) when the jump starts,
+          // so their real heights only arrive mid-scroll. Re-aim once or twice when it lands.
+          let anchor: HTMLElement | null = null;
+          const pick = (e: MouseEvent) => {
+            const id = (e.target as Element).closest?.('a[href*="#"]')?.getAttribute("href")?.split("#")[1];
+            anchor = id ? document.getElementById(id) : null;
+          };
+          addEventListener("click", pick, true);
+          const settle = (lenis: InstanceType<typeof Lenis>, tries = 2) => {
+            const want = anchor && 72 + parseFloat(getComputedStyle(anchor).scrollMarginTop);
+            if (!anchor || !tries || Math.abs(anchor.getBoundingClientRect().top - want!) < 4) return void (anchor = null);
+            lenis.scrollTo(anchor, { offset: -72, duration: 0.6, onComplete: (x) => settle(x, tries - 1) });
+          };
+          const l = new Lenis({ autoRaf: false, anchors: { offset: -72, onComplete: (x) => settle(x) }, lerp: 0.1 });
           lenis.current = l;
           l.on("scroll", ScrollTrigger.update);
           const raf = (time: number) => l.raf(time * 1000);
@@ -95,6 +108,7 @@ export default function Chrome() {
           gsap.ticker.lagSmoothing(0);
           stop = () => {
             gsap.ticker.remove(raf);
+            removeEventListener("click", pick, true);
             l.destroy();
             lenis.current = null;
           };

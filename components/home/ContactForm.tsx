@@ -32,7 +32,12 @@ export default function ContactForm() {
       });
       if (res.ok) return setStatus("sent");
       const data = await res.json().catch(() => ({}));
-      if (res.status === 422) return setErrors(data.errors ?? {}), setStatus("idle");
+      if (res.status === 422) {
+        setErrors(data.errors ?? {});
+        setStatus("idle");
+        document.getElementById(Object.keys(data.errors ?? {})[0])?.focus();
+        return;
+      }
       if (res.status === 503) return setStatus("fallback");
       setStatus("error");
     } catch {
@@ -64,13 +69,13 @@ export default function ContactForm() {
 
       <div className="grid gap-9 sm:grid-cols-2">
         <Field id="name" label="Name" error={errors.name} required>
-          <input id="name" autoComplete="name" value={v.name} onChange={set("name")} className={input} aria-invalid={!!errors.name} aria-describedby="name-err" />
+          <input id="name" autoComplete="name" value={v.name} onChange={set("name")} className={input} aria-required aria-invalid={!!errors.name} aria-describedby="name-err" />
         </Field>
         <Field id="company" label="Company">
           <input id="company" autoComplete="organization" value={v.company} onChange={set("company")} className={input} />
         </Field>
         <Field id="email" label="E-mail" error={errors.email} required>
-          <input id="email" type="email" autoComplete="email" value={v.email} onChange={set("email")} className={input} aria-invalid={!!errors.email} aria-describedby="email-err" />
+          <input id="email" type="email" autoComplete="email" value={v.email} onChange={set("email")} className={input} aria-required aria-invalid={!!errors.email} aria-describedby="email-err" />
         </Field>
         <Field id="building" label="What are you building?">
           <input id="building" value={v.building} onChange={set("building")} className={input} />
@@ -116,6 +121,7 @@ export default function ContactForm() {
           value={v.description}
           onChange={set("description")}
           className={`${input} resize-y`}
+          aria-required
           aria-invalid={!!errors.description}
           aria-describedby="description-hint description-err"
         />
@@ -155,7 +161,7 @@ function Field({ id, label, error, hint, required, children }: { id: string; lab
     <div className="field-wrap">
       <label htmlFor={id} className="meta !text-paper">
         {label}
-        {required ? <span className="text-accent-soft"> *</span> : null}
+        {required ? <span aria-hidden className="text-accent-soft"> *</span> : null}
       </label>
       {children}
       {hint ? (

@@ -19,7 +19,7 @@ export default function Reveal() {
       if (!alive) return;
       gsap.registerPlugin(SplitText);
       const ctx = gsap.context(() => {
-        document.querySelectorAll<HTMLElement>("main :is(.h2, .mark):not(.process *, .hero-mark, .diag *)").forEach((el) => {
+        document.querySelectorAll<HTMLElement>("main .h2:not(.process *, .diag *), main .mark:not(.hero-mark, .diag *, .process *, #capabilities *, #lab *)").forEach((el) => {
           if (el.getBoundingClientRect().top < innerHeight) return; // already on screen: leave it be
           SplitText.create(el, {
             type: "lines",

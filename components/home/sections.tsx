@@ -259,6 +259,7 @@ export function About() {
 
 export function Testimonial() {
   const t = testimonials[0];
+  if (t.placeholder && process.env.NODE_ENV === "production") return null; // never publish an invented quote
   return (
     <section className="section" aria-label="Client experience">
       <figure className="wrap">

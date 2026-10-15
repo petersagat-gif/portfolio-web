@@ -20,12 +20,13 @@ export default function HeroMark() {
     let raf = 0;
     const cur = parts.map(() => 0);
     const barCur = bars.map(() => 1);
+    let centres: number[] = []; // letter x-centres, measured once per hover (transforms here never move x)
 
     const loop = () => {
       let busy = false;
       parts.forEach((el, i) => {
-        const r = el.getBoundingClientRect();
-        const d = target < 0 ? 1 : Math.min(1, Math.abs(target - (r.left + r.width / 2)) / (r.width * 2.2));
+        const [cx, w] = [centres[i * 2], centres[i * 2 + 1]];
+        const d = target < 0 ? 1 : Math.min(1, Math.abs(target - cx) / (w * 2.2));
         const want = (1 - d) ** 2;
         cur[i] += (want - cur[i]) * 0.12;
         if (Math.abs(want - cur[i]) > 0.001) busy = true;
@@ -41,12 +42,24 @@ export default function HeroMark() {
     };
     const kick = () => (raf ||= requestAnimationFrame(loop));
     const hero = root.closest("section")!;
-    const move = (e: PointerEvent) => ((target = e.clientX), kick());
+    const measure = () =>
+      (centres = parts.flatMap((el) => {
+        const r = el.getBoundingClientRect();
+        return [r.left + r.width / 2, r.width];
+      }));
+    const move = (e: PointerEvent) => {
+      if (!centres.length) measure();
+      target = e.clientX;
+      kick();
+    };
     const leave = () => ((target = -1), kick());
+    const reset = () => (centres = []);
+    addEventListener("resize", reset);
     hero.addEventListener("pointermove", move);
     hero.addEventListener("pointerleave", leave);
     return () => {
       cancelAnimationFrame(raf);
+      removeEventListener("resize", reset);
       hero.removeEventListener("pointermove", move);
       hero.removeEventListener("pointerleave", leave);
     };

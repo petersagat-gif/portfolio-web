@@ -4,7 +4,7 @@ import { fontVars } from "./fonts";
 import "./globals.css";
 
 // Unmatched URLs skip the normal layout tree, so this file brings its own html, fonts and styles.
-export const metadata: Metadata = { title: "404 — Peter Šagát", robots: { index: false } };
+export const metadata: Metadata = { title: "404 | WebERV", robots: { index: false } };
 
 export default function GlobalNotFound() {
   return (

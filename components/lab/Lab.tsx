@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { lab, type ExperimentId } from "@/content/site";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -40,13 +40,27 @@ export default function Lab() {
           {lab.heading}
         </h2>
         <div className="mt-[8vh] grid gap-8 lg:grid-cols-[minmax(15rem,0.42fr)_1fr]">
-          <div role="tablist" aria-label="Experiments" className="lab-tabs flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-0 lg:overflow-visible">
+          <div
+            role="tablist"
+            aria-label="Experiments"
+            onKeyDown={(ev) => {
+              const ids = lab.experiments.map((e) => e.id);
+              const i = ids.indexOf(active);
+              const next = ({ ArrowRight: i + 1, ArrowDown: i + 1, ArrowLeft: i - 1, ArrowUp: i - 1, Home: 0, End: ids.length - 1 } as Record<string, number>)[ev.key];
+              if (next === undefined) return;
+              ev.preventDefault();
+              const id = ids[(next + ids.length) % ids.length];
+              setActive(id);
+              document.getElementById(`tab-${id}`)?.focus();
+            }}
+            className="lab-tabs flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:gap-0 lg:overflow-visible">
             {lab.experiments.map((e, i) => (
               <button
                 key={e.id}
                 role="tab"
                 id={`tab-${e.id}`}
                 aria-selected={e.id === active}
+                tabIndex={e.id === active ? 0 : -1}
                 aria-controls="lab-stage"
                 onClick={() => setActive(e.id)}
                 className="lab-tab group flex shrink-0 items-baseline gap-4 rounded-full px-4 py-2.5 text-left ring-1 ring-line lg:rounded-none lg:border-t lg:border-line lg:px-0 lg:py-4 lg:ring-0"
@@ -61,11 +75,12 @@ export default function Lab() {
               ref={stage}
               id="lab-stage"
               role="tabpanel"
+              tabIndex={0}
               aria-labelledby={`tab-${active}`}
               data-cursor={active === "ai" || active === "scroll" ? undefined : active === "physics" || active === "object" ? "drag" : "play"}
               className="lab-stage relative aspect-[4/5] overflow-hidden bg-ink-2 ring-1 ring-line sm:aspect-[16/11]"
             >
-              <Suspense fallback={<Loading />}>{near ? <Active key={active} /> : <Loading />}</Suspense>
+              {near ? <Active key={active} /> : <Loading />}
             </div>
             <p className="meta mt-4">
               <span className="text-paper">{current.name}.</span> {current.hint}

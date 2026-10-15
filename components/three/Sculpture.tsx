@@ -17,6 +17,7 @@ export default function Sculpture({ mobile }: { mobile: boolean }) {
   );
   useEffect(() => () => (geo.dispose(), mat.dispose()), [geo, mat]);
   const s = useRef({ px: 0, py: 0, push: 0 });
+  const still = useMemo(() => matchMedia("(prefers-reduced-motion: reduce)").matches, []);
 
   useFrame((state, dt) => {
     const st = s.current;
@@ -27,7 +28,8 @@ export default function Sculpture({ mobile }: { mobile: boolean }) {
     st.push += (Math.min(1, 0.35 + moving * 6) - st.push) * Math.min(1, dt * 2);
     // Scroll: the form drifts up and swells as the hero leaves.
     const out = Math.min(1, Math.max(0, -hero.getBoundingClientRect().top / innerHeight));
-    const t = state.clock.elapsedTime;
+    // Reduced motion: time stands still, the form only answers the cursor and scroll.
+    const t = still ? 0 : state.clock.elapsedTime;
     const u = mat.uniforms;
     u.uTime.value = t;
     u.uPointer.value.set(st.px * 2.2, st.py * 1.6, 1.8);

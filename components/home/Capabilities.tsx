@@ -23,13 +23,12 @@ export default function Capabilities() {
                 <li key={c.id} className="border-t border-line last:border-b">
                   <button
                     type="button"
-                    aria-expanded={on}
-                    aria-controls={`cap-${c.id}`}
                     onPointerEnter={(e) => e.pointerType === "mouse" && setActive(c.id)}
                     onFocus={() => setActive(c.id)}
                     onClick={() => setActive(c.id)}
                     className="cap-row group flex w-full items-baseline gap-5 py-5 text-left md:py-6"
                     data-on={on || undefined}
+                    aria-current={on || undefined}
                   >
                     <span className="meta w-7 shrink-0">{pad(i + 1)}</span>
                     <span className="h3 transition-[color,translate] duration-500 group-data-[on]:translate-x-3 group-data-[on]:text-accent-soft">
@@ -48,7 +47,7 @@ export default function Capabilities() {
             })}
           </ul>
           <div className="hidden lg:block">
-            <div className="sticky top-28" id={`cap-${current.id}`} aria-live="polite">
+            <div className="sticky top-28">
               <Demo id={current.id} key={current.id} />
               <p className="lead muted mt-8 max-w-[34ch]">{current.body}</p>
             </div>
@@ -70,10 +69,21 @@ function Demo({ id, className = "" }: { id: CapabilityId; className?: string }) 
 
 /** Web design: content blocks re-flow between three layouts on a 12-column grid. */
 function DesignDemo() {
+  const ref = useRef<HTMLDivElement>(null);
   const [layout, setLayout] = useState(0);
   useEffect(() => {
-    const t = setInterval(() => setLayout((l) => (l + 1) % 3), 1700);
-    return () => clearInterval(t);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let t: ReturnType<typeof setInterval> | undefined;
+    // Only cycle while on screen (also skips the copy inside a display:none breakpoint).
+    const io = new IntersectionObserver(([e]) => {
+      clearInterval(t);
+      if (e.isIntersecting) t = setInterval(() => setLayout((l) => (l + 1) % 3), 1700);
+    });
+    io.observe(ref.current!.parentElement!);
+    return () => {
+      io.disconnect();
+      clearInterval(t);
+    };
   }, []);
   // [x, y, w, h] in % for each block, per layout
   const L = [
@@ -83,7 +93,7 @@ function DesignDemo() {
   ];
   return (
     <>
-      <div className="demo-grid absolute inset-[6%]" />
+      <div ref={ref} className="demo-grid absolute inset-[6%]" />
       {L[layout].map(([x, y, w, h], i) => (
         <div
           key={i}

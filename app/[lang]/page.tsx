@@ -16,7 +16,10 @@ import {
 } from "@/components/home/sections";
 import Lab from "@/components/lab/Lab";
 import { notFound } from "next/navigation";
-import { EMAIL, about, capabilities, footer, hasLocale, meta, siteUrl } from "@/content/site";
+import type { Metadata } from "next";
+import { about, capabilities, footer, hasLocale, meta, siteUrl } from "@/content/site";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 export default async function Home({ params }: PageProps<"/[lang]">) {
   // Unknown first segments (e.g. /some-typo) land here via the [lang] route: show the 404.
@@ -28,18 +31,17 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": "ProfessionalService",
+        "@type": "Organization",
         "@id": `${siteUrl}/#weberv`,
         name: "WebERV",
         url: siteUrl,
-        email: EMAIL,
         description: meta.description,
         slogan: "Digital experiences built to be remembered.",
         logo: `${siteUrl}/icon.svg`,
         image: `${siteUrl}/og.png`,
         areaServed: "Worldwide",
-        knowsAbout: meta.keywords,
-        founder: about.team.map((m) => ({ "@type": "Person", name: m.name })),
+        knowsAbout: meta.keywords.filter((k) => k !== "WebERV"),
+        founder: about.team.filter((m) => !m.role.includes("TODO")).map((m) => ({ "@type": "Person", name: m.name })),
         sameAs: footer.socials.map((s) => s.href).filter((h) => !h.includes("TODO")),
         hasOfferCatalog: {
           "@type": "OfferCatalog",
